@@ -1,0 +1,56 @@
+/* ============================================================
+   NEXUS INGENIERÍA — Sistema de diseño global
+   Tailwind CSS v4 — tokens en @theme inline
+   Paleta tomada del logo pixel (portal morado, núcleo cian)
+   ============================================================ */
+
+@import "tailwindcss";
+
+:root {
+  --color-navy:      #0E0A26;
+  --color-deep:      #2E1065;
+  --color-purple:    #6D28D9;
+  --color-violet:    #9333EA;
+  --color-orchid:    #C04CF5;
+  --color-cyan:      #67E8F9;
+  --color-teal:      #2DD4BF;
+  --color-orange:    #FB923C;
+  --color-pink:      #F472B6;
+
+  --color-bg:        #F6F4FF;
+  --color-surface:   #FFFFFF;
+  --color-text:      #2A2540;
+  --color-muted:     #6B6585;
+  --color-border:    #E2DDF5;
+}
+
+@theme inline {
+  --color-navy: var(--color-navy);
+  --color-deep: var(--color-deep);
+  --color-purple: var(--color-purple);
+  --color-violet: var(--color-violet);
+  --color-orchid: var(--color-orchid);
+  --color-cyan: var(--color-cyan);
+  --color-teal: var(--color-teal);
+  --color-orange: var(--color-orange);
+  --color-pink: var(--color-pink);
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-text: var(--color-text);
+  --color-muted: var(--color-muted);
+  --color-border: var(--color-border);
+
+  --font-sans: var(--font-noto), system-ui, sans-serif;
+  --font-pixel: var(--font-pixel), monospace;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+/* Las imágenes pixel-art se escalan sin suavizar */
+.pixelated {
+  image-rendering: pixelated;
+}

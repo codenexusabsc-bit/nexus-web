@@ -1,0 +1,9 @@
+# Netlify — Next.js con el adaptador oficial, declarado explícitamente
+# (en Bonett la detección automática no lo aplicaba y el deploy salía estático → 404).
+# Node: ver .nvmrc. pnpm: campo packageManager de package.json.
+[build]
+  command = "pnpm build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
