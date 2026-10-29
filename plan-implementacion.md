@@ -45,7 +45,7 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 
 | Rol | Quién | Acceso |
 |-----|-------|--------|
-| `partner` | Sebastián Claros, Javier Bermúdez | Total |
+| `partner` | Sebastián Claros (sebastianclaros009@gmail.com), Álvaro Javier Bermúdez (alvarojavierbr2000@gmail.com) | Total |
 | `signer` (sin cuenta) | Clientes | Solo la página pública de firma, mediante enlace con token |
 
 - Registro público **deshabilitado**. Los dos usuarios se crean a mano en Supabase (igual que en Bonett).
@@ -261,6 +261,5 @@ RLS activa en todas las tablas: solo `partner` lee y escribe; el público solo a
 
 ## Preguntas abiertas
 
-1. Correo de Javier para crear su usuario.
-2. Para cuentas de cobro: ¿a nombre de quién se emiten y con qué datos (cédula / RUT)?
-3. ¿Qué número de WhatsApp va en el botón flotante de la landing?
+1. Para cuentas de cobro: ¿a nombre de quién se emiten y con qué datos (cédula / RUT)?
+2. ¿Qué número de WhatsApp va en el botón flotante de la landing?
