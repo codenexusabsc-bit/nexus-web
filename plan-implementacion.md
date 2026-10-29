@@ -18,15 +18,17 @@ Una sola aplicación con dos caras:
 | **Sitio público** | Cualquier persona | Landing de servicios, presentación descargable en PDF, formulario de contacto, botón de WhatsApp |
 | **Panel privado** | Sebastián y Javier (usuario y contraseña) | Carpeta compartida por proyectos, editor de documentos con plantilla Nexus, firmas, generador de piezas para redes, edición de la landing, prospectos, cotizaciones y kit de marca |
 
-Todo en planes gratuitos mientras no haya dominio propio. Dirección inicial propuesta: `nexus-ingenieria.netlify.app` (verificar disponibilidad en Fase 0).
+Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **https://nexus-ingenieria1.netlify.app** (`nexus-ingenieria` ya estaba ocupado; el nombre se puede cambiar gratis en Netlify).
 
 ---
 
 ## Estado del proyecto
 
+> Fase 0 verificada el 29/10/2026: repo privado `codenexusabsc-bit/nexus-web`, proyecto Supabase `sbwxeasekgyabgkgtykp` (East US), sitio público en Netlify con `/api/salud` → `{"supabase":"ok"}` y cabeceras de seguridad activas. Protección de visitantes de Netlify desactivada.
+
 | Fase | Nombre | Estado |
 |------|--------|--------|
-| 0 | Cuentas, repo y proyecto base | ⏳ Pendiente |
+| 0 | Cuentas, repo y proyecto base | ✅ Completada (29/10/2026) |
 | 1 | Autenticación de los socios | ⏳ Pendiente |
 | 2 | Proyectos y carpeta compartida | ⏳ Pendiente |
 | 3 | Landing pública editable + contacto | ⏳ Pendiente |
@@ -259,7 +261,6 @@ RLS activa en todas las tablas: solo `partner` lee y escribe; el público solo a
 
 ## Preguntas abiertas
 
-1. ¿Qué subdominio prefieren en Netlify? (`nexus-ingenieria`, `nexusing`, `codenexus`…)
-2. Correo de Javier para crear su usuario.
-3. Para cuentas de cobro: ¿a nombre de quién se emiten y con qué datos (cédula / RUT)?
-4. ¿Qué número de WhatsApp va en el botón flotante de la landing?
+1. Correo de Javier para crear su usuario.
+2. Para cuentas de cobro: ¿a nombre de quién se emiten y con qué datos (cédula / RUT)?
+3. ¿Qué número de WhatsApp va en el botón flotante de la landing?
