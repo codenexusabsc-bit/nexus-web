@@ -29,7 +29,7 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 | Fase | Nombre | Estado |
 |------|--------|--------|
 | 0 | Cuentas, repo y proyecto base | ✅ Completada (29/10/2026) |
-| 1 | Autenticación de los socios | ⏳ Pendiente |
+| 1 | Autenticación de los socios | 🔨 Código listo, falta configurar Supabase y crear usuarios |
 | 2 | Proyectos y carpeta compartida | ⏳ Pendiente |
 | 3 | Landing pública editable + contacto | ⏳ Pendiente |
 | 4 | Editor de documentos con plantilla Nexus | ⏳ Pendiente |
