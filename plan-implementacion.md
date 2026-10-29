@@ -25,11 +25,13 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 ## Estado del proyecto
 
 > Fase 0 verificada el 29/10/2026: repo privado `codenexusabsc-bit/nexus-web`, proyecto Supabase `sbwxeasekgyabgkgtykp` (East US), sitio público en Netlify con `/api/salud` → `{"supabase":"ok"}` y cabeceras de seguridad activas. Protección de visitantes de Netlify desactivada.
+>
+> Fase 1 verificada el 29/10/2026: migración `001` aplicada, registro público desactivado, usuarios de Sebastián y Álvaro creados con rol `partner`; Sebastián entró al panel en producción. Pendiente: SMTP propio para que el correo de recuperación llegue a cualquier socio (el SMTP por defecto de Supabase solo envía a miembros del equipo).
 
 | Fase | Nombre | Estado |
 |------|--------|--------|
 | 0 | Cuentas, repo y proyecto base | ✅ Completada (29/10/2026) |
-| 1 | Autenticación de los socios | 🔨 Código listo, falta configurar Supabase y crear usuarios |
+| 1 | Autenticación de los socios | ✅ Completada (29/10/2026) |
 | 2 | Proyectos y carpeta compartida | ⏳ Pendiente |
 | 3 | Landing pública editable + contacto | ⏳ Pendiente |
 | 4 | Editor de documentos con plantilla Nexus | ⏳ Pendiente |
