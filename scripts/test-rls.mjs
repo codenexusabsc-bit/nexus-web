@@ -16,7 +16,7 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 alter table storage.objects enable row level security;
 grant select, insert, delete on storage.objects to authenticated;
 `);
-for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql"]) {
+for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql"]) {
   await db.exec(readFileSync(M + f, "utf8")); console.log("✓", f);
 }
 const A = "11111111-1111-1111-1111-111111111111", B = "22222222-2222-2222-2222-222222222222", X = "33333333-3333-3333-3333-333333333333";
@@ -64,5 +64,26 @@ err = null; try { await as(X, `insert into storage.objects (bucket_id, name) val
 ok(err !== null, "no socio no sube a storage");
 await db.exec("set role anon;"); err = null; try { await db.query("select * from public.files"); } catch (e) { err = e.message; } await db.exec("reset role;");
 ok(err !== null, "anon sin acceso a files");
+// ---- 003: sitio público ----
+const asAnon = async (sql) => { await db.exec("set role anon;"); try { return await db.query(sql); } finally { await db.exec("reset role;"); } };
+ok((await asAnon("select content from public.site_settings")).rows.length === 1, "anon lee el contenido del sitio");
+ok((await asAnon("select * from public.services")).rows.length === 7, "anon lee los 7 servicios");
+await as(A, "update public.services set visible = false where name = 'Branding'");
+ok((await asAnon("select * from public.services")).rows.length === 6, "anon no ve servicios ocultos");
+ok((await as(A, "select * from public.services")).rows.length === 7, "socio ve también los ocultos");
+await asAnon("insert into public.leads (name, email, message) values ('Ana', 'ana@x.co', 'Hola')");
+ok((await db.query("select count(*)::int n from public.leads")).rows[0].n === 1, "anon envía un mensaje");
+err = null; try { await asAnon("select * from public.leads"); } catch (e) { err = e.message; }
+ok(err !== null, "anon no lee mensajes");
+err = null; try { await asAnon("insert into public.leads (name, email, message, status) values ('B', 'b@x.co', 'x', 'ganado')"); } catch (e) { err = e.message; }
+ok(err !== null, "anon no elige el estado del mensaje");
+err = null; try { await asAnon("insert into public.leads (name, message) values ('C', 'sin contacto')"); } catch (e) { err = e.message; }
+ok(err !== null, "mensaje sin correo ni teléfono rechazado");
+ok((await as(X, "select * from public.leads")).rows.length === 0, "no socio no lee mensajes");
+ok((await as(A, "select * from public.leads")).rows.length === 1, "socio lee mensajes");
+ok((await as(X, "update public.site_settings set content = '{}' returning id")).rows.length === 0, "no socio no edita el sitio");
+err = null; try { await asAnon("update public.site_settings set content = '{}'"); } catch (e) { err = e.message; }
+ok(err !== null, "anon no edita el sitio");
+ok((await as(A, "update public.site_settings set updated_at = now() returning id")).rows.length === 1, "socio edita el sitio");
 console.log(`\n${pass} ok, ${fail} fallas`);
 process.exit(fail ? 1 : 0);

@@ -11,6 +11,13 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // Los sellos de firma se leen del disco en una ruta protegida: incluirlos en la función de Netlify.
+  outputFileTracingIncludes: {
+    "/panel/marca/[archivo]": ["./private/marca/**"],
+    "/presentacion": ["./public/marca/portal.png"],
+  },
+  // react-pdf trae binarios (yoga) que no deben empaquetarse.
+  serverExternalPackages: ["@react-pdf/renderer"],
   headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

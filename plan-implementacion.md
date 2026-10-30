@@ -33,13 +33,13 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 | 0 | Cuentas, repo y proyecto base | ✅ Completada (29/10/2026) |
 | 1 | Autenticación de los socios | ✅ Completada (29/10/2026) |
 | 2 | Proyectos y carpeta compartida | 🔨 Código listo, falta aplicar la migración 002 y probar |
-| 3 | Landing pública editable + contacto | ⏳ Pendiente |
+| 3 | Landing pública editable + contacto | 🔨 Código listo, falta aplicar la migración 003 y probar |
 | 4 | Editor de documentos con plantilla Nexus | ⏳ Pendiente |
 | 5 | Firmas (socios y clientes) | ⏳ Pendiente |
 | 6 | Generador de piezas para redes | ⏳ Pendiente |
 | 7 | Cotizaciones y cuentas de cobro | ⏳ Pendiente |
 | 8 | Prospectos y tareas de proyecto | ⏳ Pendiente |
-| 9 | Utilidades de marca | ⏳ Pendiente |
+| 9 | Utilidades de marca | 🔸 Adelantado: panel desplegable de logos y sellos (sellos solo con sesión) |
 
 ---
 
@@ -85,6 +85,12 @@ Auth · Storage (carpeta compartida, PDFs, logos, piezas)
 **Cambio frente a Bonett:** se usa **Supabase Storage** (1 GB gratis, sin tarjeta) en lugar de Cloudflare R2. El volumen esperado (PDFs y PNG) cabe de sobra. Si crece, se migra a R2.
 
 ---
+
+## Identidad visual y animaciones
+
+- Fondo espacial animado reutilizable (`components/space/`): estrellas que titilan, estrellas fugaces, nebulosas y el agujero negro con planetas pixel en órbita (SVG). Solo CSS/SVG, sin JavaScript; se detiene con "reducir movimiento".
+- Se usa en la landing, en las pantallas de acceso y en la cabecera del panel.
+- Botón **Logos** en el panel: panel lateral con logos, publicidad y sellos para descargar. Los sellos de firma no están en `/public`: se sirven por `/panel/marca/[archivo]` solo con sesión de socio.
 
 ## Módulos
 

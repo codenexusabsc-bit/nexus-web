@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/panel", label: "Inicio" },
   { href: "/panel/carpeta", label: "Carpeta" },
   { href: "/panel/solicitudes", label: "Solicitudes" },
+  { href: "/panel/sitio", label: "Sitio web" },
 ];
 
 /** Pestañas del panel con la sección actual resaltada (lee la URL: va dentro de <Suspense>). */

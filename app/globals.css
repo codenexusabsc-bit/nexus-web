@@ -54,3 +54,85 @@ body {
 .pixelated {
   image-rendering: pixelated;
 }
+
+/* ---- Animaciones espaciales -------------------------------- */
+.star {
+  border-radius: 1px;
+  animation: twinkle 4s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(1); }
+  50%      { opacity: 1;    transform: scale(1.4); }
+}
+
+/* Estrella fugaz: una estela que cruza en diagonal y desaparece.
+   La animación dura ~17 s pero el trazo solo se ve el primer 7 %, así
+   cada estrella pasa de vez en cuando y no todas a la vez. */
+.shooting-star {
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(103, 232, 249, 0), #67e8f9 70%, #ffffff);
+  transform: rotate(-35deg) translateX(0);
+  transform-origin: right center;
+  opacity: 0;
+  animation: shoot 18s linear infinite;
+  filter: drop-shadow(0 0 6px rgba(103, 232, 249, 0.9));
+}
+@keyframes shoot {
+  0%   { opacity: 0; transform: rotate(-35deg) translateX(0) scaleX(0.2); }
+  1%   { opacity: 1; }
+  6%   { opacity: 1; transform: rotate(-35deg) translateX(-420px) scaleX(1); }
+  7.5%, 100% { opacity: 0; transform: rotate(-35deg) translateX(-560px) scaleX(0.6); }
+}
+
+.nebula { animation: drift 22s ease-in-out infinite alternate; }
+.nebula-slow { animation-duration: 30s; }
+@keyframes drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(6%, 4%) scale(1.12); }
+}
+
+.portal-float {
+  animation: float 6s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50%      { transform: translateY(-8px) rotate(1.5deg); }
+}
+
+/* Entrada suave de bloques al cargar */
+.rise { animation: rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+.rise-1 { animation-delay: 0.08s; }
+.rise-2 { animation-delay: 0.16s; }
+.rise-3 { animation-delay: 0.24s; }
+.rise-4 { animation-delay: 0.32s; }
+/* Arranca semitransparente (no invisible): si el navegador pausa las animaciones
+   (pestaña en segundo plano, ahorro de energía) el contenido sigue legible. */
+@keyframes rise {
+  from { opacity: 0.5; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Brillo que recorre un botón o una cinta */
+.shine { position: relative; overflow: hidden; }
+.shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
+  transform: translateX(-100%);
+  animation: shine 4.5s ease-in-out infinite;
+}
+@keyframes shine {
+  0%, 60% { transform: translateX(-100%); }
+  100%    { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .star, .shooting-star, .nebula, .portal-float, .rise, .shine::after {
+    animation: none !important;
+  }
+  .shooting-star { display: none; }
+}

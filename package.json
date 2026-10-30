@@ -10,6 +10,7 @@
     "test:rls": "node scripts/test-rls.mjs"
   },
   "dependencies": {
+    "@react-pdf/renderer": "4.3.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.118.0",
     "fflate": "0.8.2",

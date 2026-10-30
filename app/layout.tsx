@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     "Nexus Ingeniería diseña y construye páginas web, software a la medida, branding y soluciones de redes y telecomunicaciones.",
   authors: [{ name: "Nexus Ingeniería" }],
   openGraph: { images: ["/marca/promo.png"] },
-  robots: { index: false, follow: false }, // Hasta publicar la landing (Fase 3)
+  // La landing es pública e indexable; el panel y el acceso se marcan noindex en sus propios metadatos.
 };
 
 export default function RootLayout({
