@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Download, Palette, X } from "lucide-react";
 import { BRAND_ASSETS, assetUrl } from "@/lib/marca";
 
-/** Botón "Logos" que despliega un panel lateral con todos los recursos de marca. */
+/** Botón "Logos y sellos" del menú lateral: despliega un panel con todos los recursos de marca. */
 export function BrandDrawer() {
   const [open, setOpen] = useState(false);
 
@@ -24,12 +24,12 @@ export function BrandDrawer() {
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-3 py-1.5 text-sm text-white transition hover:bg-white/10"
+        className="group flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-white/70 transition hover:bg-white/5 hover:text-white"
         aria-haspopup="dialog"
         aria-expanded={open}
       >
-        <Palette size={15} aria-hidden="true" />
-        <span className="hidden sm:inline">Logos</span>
+        <Palette size={17} className="transition group-hover:scale-110" aria-hidden="true" />
+        Logos y sellos
       </button>
 
       <div

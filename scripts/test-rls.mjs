@@ -16,7 +16,7 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 alter table storage.objects enable row level security;
 grant select, insert, delete on storage.objects to authenticated;
 `);
-for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql"]) {
+for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql"]) {
   await db.exec(readFileSync(M + f, "utf8")); console.log("✓", f);
 }
 const A = "11111111-1111-1111-1111-111111111111", B = "22222222-2222-2222-2222-222222222222", X = "33333333-3333-3333-3333-333333333333";
@@ -85,5 +85,19 @@ ok((await as(X, "update public.site_settings set content = '{}' returning id")).
 err = null; try { await asAnon("update public.site_settings set content = '{}'"); } catch (e) { err = e.message; }
 ok(err !== null, "anon no edita el sitio");
 ok((await as(A, "update public.site_settings set updated_at = now() returning id")).rows.length === 1, "socio edita el sitio");
+// ---- 004: agenda ----
+await as(A, "insert into public.agenda_items (kind, title, starts_at) values ('recordatorio', 'privado de A', now())");
+await as(A, "insert into public.agenda_items (kind, title, starts_at, shared) values ('recordatorio', 'compartido', now(), true)");
+await as(A, `insert into public.agenda_items (kind, title, starts_at, recipient) values ('mensaje', 'para B', now(), '${B}')`);
+ok((await as(A, "select * from public.agenda_items")).rows.length === 3, "A ve sus 3 ítems");
+ok((await as(B, "select title from public.agenda_items order by title")).rows.map((r) => r.title).join() === "compartido,para B", "B ve el compartido y su mensaje, no el privado");
+ok((await as(X, "select * from public.agenda_items")).rows.length === 0, "no socio no ve la agenda");
+ok((await as(B, "update public.agenda_items set seen_at = now() where kind = 'mensaje' returning id")).rows.length === 1, "destinatario marca leído");
+ok((await as(B, "update public.agenda_items set done_at = now() where title = 'privado de A' returning id")).rows.length === 0, "B no toca el privado de A");
+ok((await as(B, "delete from public.agenda_items where title = 'para B' returning id")).rows.length === 0, "destinatario no borra el mensaje");
+err = null; try { await as(B, `insert into public.agenda_items (kind, title, starts_at, created_by) values ('recordatorio', 'falso', now(), '${A}')`); } catch (e) { err = e.message; }
+ok(err !== null, "no se crea a nombre del otro");
+err = null; try { await as(A, `insert into public.agenda_items (kind, title, starts_at, recipient) values ('mensaje', 'a mí', now(), '${A}')`); } catch (e) { err = e.message; }
+ok(err !== null, "no se envía un mensaje a uno mismo");
 console.log(`\n${pass} ok, ${fail} fallas`);
 process.exit(fail ? 1 : 0);

@@ -136,3 +136,43 @@ body {
   }
   .shooting-star { display: none; }
 }
+
+/* ---- Calendario (FullCalendar) con la paleta Nexus --------- */
+.agenda-calendar .fc {
+  --fc-border-color: var(--color-border);
+  --fc-button-bg-color: #fff;
+  --fc-button-border-color: var(--color-border);
+  --fc-button-text-color: var(--color-navy);
+  --fc-button-hover-bg-color: color-mix(in srgb, var(--color-purple) 10%, #fff);
+  --fc-button-hover-border-color: var(--color-purple);
+  --fc-button-active-bg-color: var(--color-purple);
+  --fc-button-active-border-color: var(--color-purple);
+  --fc-today-bg-color: color-mix(in srgb, var(--color-cyan) 14%, transparent);
+  --fc-now-indicator-color: var(--color-pink);
+  --fc-event-text-color: #fff;
+  --fc-page-bg-color: #fff;
+  --fc-list-event-hover-bg-color: var(--color-bg);
+  font-size: 0.875rem;
+}
+.agenda-calendar .fc .fc-toolbar { flex-wrap: wrap; gap: 0.5rem; }
+.agenda-calendar .fc .fc-toolbar-title { font-size: 1.15rem; font-weight: 700; color: var(--color-navy); }
+/* "octubre de 2026" → "Octubre de 2026" (capitalize pondría "De") */
+.agenda-calendar .fc .fc-toolbar-title::first-letter { text-transform: uppercase; }
+.agenda-calendar .fc .fc-button { border-radius: 0.5rem; font-size: 0.8rem; text-transform: capitalize; box-shadow: none !important; }
+.agenda-calendar .fc .fc-button-primary:not(:disabled).fc-button-active,
+.agenda-calendar .fc .fc-button-primary:not(:disabled):active { color: #fff; }
+.agenda-calendar .fc .fc-col-header-cell-cushion,
+.agenda-calendar .fc .fc-daygrid-day-number { color: var(--color-navy); text-decoration: none; text-transform: capitalize; }
+.agenda-calendar .fc .fc-daygrid-day:hover { background: color-mix(in srgb, var(--color-purple) 4%, transparent); cursor: pointer; }
+.agenda-calendar .fc-event { cursor: pointer; border-radius: 6px; padding: 1px 3px; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.agenda-calendar .fc-event:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgb(14 10 38 / 0.18); }
+.agenda-calendar .fc-daygrid-dot-event .fc-event-title { color: var(--color-text); }
+.agenda-calendar .fc-event.is-done { opacity: 0.45; text-decoration: line-through; }
+.agenda-calendar .fc-event.is-unseen { animation: unseen-pulse 2s ease-in-out infinite; font-weight: 700; }
+@keyframes unseen-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgb(234 88 12 / 0.55); }
+  50%      { box-shadow: 0 0 0 4px rgb(234 88 12 / 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .agenda-calendar .fc-event.is-unseen { animation: none; }
+}

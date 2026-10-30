@@ -32,6 +32,7 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 |------|--------|--------|
 | 0 | Cuentas, repo y proyecto base | ✅ Completada (29/10/2026) |
 | 1 | Autenticación de los socios | ✅ Completada (29/10/2026) |
+| 2.5 | Agenda: calendario con recordatorios y mensajes entre socios | 🔨 Código listo, falta aplicar la migración 004 |
 | 2 | Proyectos y carpeta compartida | 🔨 Código listo, falta aplicar la migración 002 y probar |
 | 3 | Landing pública editable + contacto | 🔨 Código listo, falta aplicar la migración 003 y probar |
 | 4 | Editor de documentos con plantilla Nexus | ⏳ Pendiente |
@@ -91,6 +92,17 @@ Auth · Storage (carpeta compartida, PDFs, logos, piezas)
 - Fondo espacial animado reutilizable (`components/space/`): estrellas que titilan, estrellas fugaces, nebulosas y el agujero negro con planetas pixel en órbita (SVG). Solo CSS/SVG, sin JavaScript; se detiene con "reducir movimiento".
 - Se usa en la landing, en las pantallas de acceso y en la cabecera del panel.
 - Botón **Logos** en el panel: panel lateral con logos, publicidad y sellos para descargar. Los sellos de firma no están en `/public`: se sirven por `/panel/marca/[archivo]` solo con sesión de socio.
+
+## Navegación y agenda
+
+- **Menú lateral izquierdo** con todas las funciones agrupadas (Trabajo, Clientes, Documentos y marca); las que aún no existen aparecen atenuadas con su fase. En celular se despliega con el botón de menú.
+- **Inicio = Agenda:** calendario al centro (mes, semana, lista) y columna de pendientes.
+  - Recordatorios **para mí** (privados) o **compartidos** (los ven los dos).
+  - **Mensajes al socio** con fecha: le aparecen en su calendario y en sus pendientes hasta que los lee.
+  - Las **solicitudes de documentos** se ven solas: fecha límite de lo que me piden, entregas por revisar y lo que pedí.
+  - Arrastrar para reprogramar; marcar hecho; mensajes sin leer resaltados.
+- Pendientes: mensajes sin leer, entregas por revisar, documentos que me piden, recordatorios de hoy y atrasados, mensajes nuevos de la página.
+- Tabla `agenda_items` (migración 004) con RLS: lo privado solo lo ve quien lo creó.
 
 ## Módulos
 
