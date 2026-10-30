@@ -27,7 +27,7 @@ const as = async (uid, sql) => {
   try { return await db.query(sql); } finally { await db.exec("reset role;"); }
 };
 let pass = 0, fail = 0;
-const ok = (c, m) => { c ? pass++ : fail++; console.log(c ? "  ok " : "  FALLA", m); };
+const ok = (c, m) => { if (c) pass++; else fail++; console.log(c ? "  ok " : "  FALLA", m); };
 const proj = (await db.query("select id from public.projects where name='Interno Nexus'")).rows[0].id;
 ok((await as(A, "select * from public.projects")).rows.length === 3, "socio ve 3 proyectos");
 ok((await as(X, "select * from public.projects")).rows.length === 0, "no socio no ve proyectos");
