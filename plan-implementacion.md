@@ -35,7 +35,7 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 | 2.5 | Agenda: calendario con recordatorios y mensajes entre socios | 🔨 Código listo, falta aplicar la migración 004 |
 | 2 | Proyectos y carpeta compartida | 🔨 Código listo, falta aplicar la migración 002 y probar |
 | 3 | Landing pública editable + contacto | 🔨 Código listo, falta aplicar la migración 003 y probar |
-| 4 | Editor de documentos con plantilla Nexus | ⏳ Pendiente |
+| 4 | Editor de documentos con plantilla Nexus | 🔨 Código listo, falta aplicar la migración 005 |
 | 5 | Firmas (socios y clientes) | ⏳ Pendiente |
 | 6 | Generador de piezas para redes | ⏳ Pendiente |
 | 7 | Cotizaciones y cuentas de cobro | ⏳ Pendiente |

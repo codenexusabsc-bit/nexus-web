@@ -176,3 +176,46 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .agenda-calendar .fc-event.is-unseen { animation: none; }
 }
+
+/* ---- Editor de documentos (TipTap) ------------------------ */
+.tiptap-doc {
+  min-height: 60dvh;
+  padding: 1.5rem 1.75rem;
+  outline: none;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--color-text);
+}
+.tiptap-doc > * + * { margin-top: 0.6em; }
+.tiptap-doc h1 { font-size: 1.5rem; font-weight: 700; color: var(--color-navy); margin-top: 1em; }
+.tiptap-doc h2 { font-size: 1.2rem; font-weight: 700; color: var(--color-purple); margin-top: 0.9em; }
+.tiptap-doc h3 { font-size: 1.05rem; font-weight: 700; color: var(--color-navy); margin-top: 0.8em; }
+.tiptap-doc ul { list-style: disc; padding-left: 1.4rem; }
+.tiptap-doc ol { list-style: decimal; padding-left: 1.4rem; }
+.tiptap-doc li > p { margin: 0; }
+.tiptap-doc li::marker { color: var(--color-violet); }
+.tiptap-doc blockquote { border-left: 3px solid var(--color-violet); padding-left: 0.9rem; color: var(--color-muted); }
+.tiptap-doc a { color: var(--color-purple); text-decoration: underline; }
+.tiptap-doc hr { border: none; border-top: 1px solid var(--color-border); margin: 1.2rem 0; }
+.tiptap-doc table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.tiptap-doc th, .tiptap-doc td { border: 1px solid var(--color-border); padding: 0.4rem 0.55rem; vertical-align: top; }
+.tiptap-doc th { background: var(--color-bg); color: var(--color-navy); font-weight: 700; text-align: left; }
+.tiptap-doc .selectedCell { background: color-mix(in srgb, var(--color-purple) 12%, transparent); }
+.tiptap-doc .page-break {
+  margin: 1.4rem 0;
+  border-top: 2px dashed var(--color-orchid);
+  position: relative;
+}
+.tiptap-doc .page-break::after {
+  content: "salto de página";
+  position: absolute;
+  top: -0.7rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  padding: 0 0.5rem;
+  font-size: 0.7rem;
+  color: var(--color-orchid);
+}
+.tiptap-doc .ProseMirror-selectednode { outline: 2px solid var(--color-cyan); }
+.tiptap-doc p.is-editor-empty:first-child::before { content: "Empieza a escribir…"; color: var(--color-muted); float: left; height: 0; pointer-events: none; }

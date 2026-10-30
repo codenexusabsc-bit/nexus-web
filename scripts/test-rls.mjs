@@ -16,7 +16,7 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 alter table storage.objects enable row level security;
 grant select, insert, delete on storage.objects to authenticated;
 `);
-for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql"]) {
+for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql"]) {
   await db.exec(readFileSync(M + f, "utf8")); console.log("✓", f);
 }
 const A = "11111111-1111-1111-1111-111111111111", B = "22222222-2222-2222-2222-222222222222", X = "33333333-3333-3333-3333-333333333333";
@@ -99,5 +99,18 @@ err = null; try { await as(B, `insert into public.agenda_items (kind, title, sta
 ok(err !== null, "no se crea a nombre del otro");
 err = null; try { await as(A, `insert into public.agenda_items (kind, title, starts_at, recipient) values ('mensaje', 'a mí', now(), '${A}')`); } catch (e) { err = e.message; }
 ok(err !== null, "no se envía un mensaje a uno mismo");
+// ---- 005: documentos ----
+const doc = (await as(A, "insert into public.documents (title) values ('Propuesta') returning id")).rows[0].id;
+const v2 = (await as(B, `select public.save_document('${doc}', 'Propuesta v2', '{"type":"doc","content":[]}', '{"cliente":"Bonett"}', null) v`)).rows[0].v;
+ok(v2 === 2, "guardar sube la versión");
+ok((await as(A, `select count(*)::int n from public.document_versions where document_id = '${doc}'`)).rows[0].n === 1, "guardar deja copia en versiones");
+ok((await as(X, "select * from public.documents")).rows.length === 0, "no socio no ve documentos");
+err = null; try { await as(X, `select public.save_document('${doc}', 'x', '{}', '{}', null)`); } catch (e) { err = e.message; }
+ok(err !== null, "no socio no guarda");
+await db.exec(`update public.documents set status = 'firmado' where id = '${doc}'`);
+err = null; try { await as(A, `select public.save_document('${doc}', 'cambio', '{}', '{}', null)`); } catch (e) { err = e.message; }
+ok(err && err.includes("firmado"), "un documento firmado no se edita");
+err = null; try { await as(A, `update public.document_versions set title = 'x'`); } catch (e) { err = e.message; }
+ok(err !== null, "las versiones no se modifican");
 console.log(`\n${pass} ok, ${fail} fallas`);
 process.exit(fail ? 1 : 0);
