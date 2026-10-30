@@ -36,7 +36,7 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 | 2 | Proyectos y carpeta compartida | 🔨 Migración aplicada (29/10/2026), falta probar en el panel |
 | 3 | Landing pública editable + contacto | 🔨 Migración aplicada, falta probar en el panel |
 | 4 | Editor de documentos con plantilla Nexus | 🔨 Migración aplicada, falta probar en el panel |
-| 5 | Firmas (socios y clientes) | 🔨 Código listo, falta migración 006 y la clave SUPABASE_SERVICE_ROLE_KEY |
+| 5 | Firmas (socios y clientes) | 🔨 Migración 006 y clave de servidor listas (29/10/2026), falta probar una firma real |
 | 6 | Generador de piezas para redes | ⏳ Pendiente |
 | 7 | Cotizaciones y cuentas de cobro | ⏳ Pendiente |
 | 8 | Prospectos y tareas de proyecto | ⏳ Pendiente |
