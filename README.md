@@ -38,3 +38,9 @@ Para quitar el acceso: `role = 'none'` (o borrar el usuario en Authentication).
 ## Migraciones
 
 En `supabase/migrations/`, en orden. Se aplican pegándolas en **SQL Editor → Run**.
+
+Antes de aplicarlas, probar los permisos en local (PGlite, sin servidor):
+
+```bash
+pnpm test:rls
+```

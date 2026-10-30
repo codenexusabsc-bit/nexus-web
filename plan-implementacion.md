@@ -32,7 +32,7 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 |------|--------|--------|
 | 0 | Cuentas, repo y proyecto base | ✅ Completada (29/10/2026) |
 | 1 | Autenticación de los socios | ✅ Completada (29/10/2026) |
-| 2 | Proyectos y carpeta compartida | ⏳ Pendiente |
+| 2 | Proyectos y carpeta compartida | 🔨 Código listo, falta aplicar la migración 002 y probar |
 | 3 | Landing pública editable + contacto | ⏳ Pendiente |
 | 4 | Editor de documentos con plantilla Nexus | ⏳ Pendiente |
 | 5 | Firmas (socios y clientes) | ⏳ Pendiente |
@@ -95,7 +95,7 @@ Un espacio común donde cualquiera de los dos socios deja archivos, y donde se *
 - **Vistas:** por proyecto, por etiqueta, "subido por mí / por mi socio" y "recientes". Buscador por nombre.
 - **Subir:** arrastrar y soltar varios archivos a la vez (PDF, imágenes, Word, Excel, ZIP), con nota opcional. Descargar uno o la carpeta entera en ZIP.
 - **Solicitudes de documentos:** un socio crea una solicitud ("Necesito el RUT de Bonett"), elige proyecto y fecha límite. El otro la ve en su inicio, sube el archivo **directamente en la solicitud** y queda marcada como entregada. Estados: pendiente → entregada → aceptada / devuelta con comentario.
-- **Avisos:** correo (Resend) cuando llega una solicitud nueva o un archivo entregado; contador de pendientes en el panel.
+- **Avisos:** contador de pendientes en el inicio del panel. El aviso por **correo** queda para cuando haya SMTP propio (Gmail de Nexus o dominio en Resend): sin dominio, Resend y el SMTP por defecto de Supabase solo entregan a la cuenta dueña.
 - **Versiones:** subir un archivo con el mismo nombre en el mismo proyecto guarda una versión nueva sin borrar la anterior.
 - **Papelera:** lo borrado se puede recuperar durante 30 días.
 - Los documentos hechos en el editor y los PDF firmados aparecen también en la carpeta de su proyecto.

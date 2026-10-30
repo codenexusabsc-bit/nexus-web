@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Toaster } from "sonner";
 import type { Metadata } from "next";
+import { NavLinks, PanelNav } from "@/components/PanelNav";
 import { UserMenu } from "@/components/UserMenu";
 
 export const metadata: Metadata = {
@@ -28,7 +30,11 @@ export default function PanelLayout({ children }: { children: React.ReactNode })
           <UserMenu />
         </Suspense>
       </header>
+      <Suspense fallback={<NavLinks />}>
+        <PanelNav />
+      </Suspense>
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-8">{children}</main>
+      <Toaster position="top-right" richColors closeButton />
     </div>
   );
 }
