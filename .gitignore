@@ -51,3 +51,6 @@ supabase/.branches/
 # Archivos de trabajo locales
 _bg_*.png
 docs/_contenido.pdf
+
+# Archivo temporal para pegar migraciones pendientes en el SQL Editor
+supabase/aplicar-pendientes.sql

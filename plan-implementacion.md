@@ -32,10 +32,10 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 |------|--------|--------|
 | 0 | Cuentas, repo y proyecto base | ✅ Completada (29/10/2026) |
 | 1 | Autenticación de los socios | ✅ Completada (29/10/2026) |
-| 2.5 | Agenda: calendario con recordatorios y mensajes entre socios | 🔨 Código listo, falta aplicar la migración 004 |
-| 2 | Proyectos y carpeta compartida | 🔨 Código listo, falta aplicar la migración 002 y probar |
-| 3 | Landing pública editable + contacto | 🔨 Código listo, falta aplicar la migración 003 y probar |
-| 4 | Editor de documentos con plantilla Nexus | 🔨 Código listo, falta aplicar la migración 005 |
+| 2.5 | Agenda: calendario con recordatorios y mensajes entre socios | 🔨 Migración aplicada, falta probar en el panel |
+| 2 | Proyectos y carpeta compartida | 🔨 Migración aplicada (29/10/2026), falta probar en el panel |
+| 3 | Landing pública editable + contacto | 🔨 Migración aplicada, falta probar en el panel |
+| 4 | Editor de documentos con plantilla Nexus | 🔨 Migración aplicada, falta probar en el panel |
 | 5 | Firmas (socios y clientes) | ⏳ Pendiente |
 | 6 | Generador de piezas para redes | ⏳ Pendiente |
 | 7 | Cotizaciones y cuentas de cobro | ⏳ Pendiente |
