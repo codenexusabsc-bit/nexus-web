@@ -29,11 +29,16 @@ async function Agenda() {
         <h1 className="text-2xl font-bold text-navy sm:text-3xl">Hola, {first}</h1>
         <p className="text-muted">Toca un día del calendario para agendar un recordatorio o enviarle un mensaje a tu socio.</p>
       </div>
-      <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <AgendaCalendar partners={partners} userId={user.id} names={names} />
-        <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-border/50" />}>
-          <PendingList userId={user.id} />
-        </Suspense>
+      {/* Pendientes primero en celular; al lado del calendario en pantallas grandes */}
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(300px,2fr)]">
+        <div className="order-2 lg:order-1">
+          <AgendaCalendar partners={partners} userId={user.id} names={names} />
+        </div>
+        <div className="order-1 lg:sticky lg:top-6 lg:order-2">
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-xl bg-border/50" />}>
+            <PendingList userId={user.id} />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

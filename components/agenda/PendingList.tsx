@@ -47,19 +47,28 @@ export async function PendingList({ userId }: { userId: string }) {
   const review = (toReview.data ?? []) as Row[];
   const owe = (toMe.data ?? []) as Row[];
   const newLeads = leads.count ?? 0;
-  const empty = !msgs.length && !rems.length && !review.length && !owe.length && !newLeads;
+  const total = msgs.length + rems.length + review.length + owe.length + newLeads;
+  const empty = total === 0;
 
   return (
-    <aside className="flex flex-col gap-4" aria-label="Pendientes">
-      <h2 className="font-pixel text-sm text-purple">PENDIENTES</h2>
+    <aside className="flex flex-col gap-3" aria-label="Pendientes">
+      {/* Encabezado destacado con el total */}
+      <div className="relative overflow-hidden rounded-2xl bg-navy px-5 py-4 text-white shadow-lg shadow-purple/20">
+        <div className="absolute -top-8 -right-8 size-28 rounded-full bg-violet/40 blur-2xl" aria-hidden="true" />
+        <p className="relative font-pixel text-xs tracking-[0.25em] text-cyan">PENDIENTES</p>
+        <p className="relative mt-1 flex items-baseline gap-2">
+          <span className="text-4xl font-bold">{total}</span>
+          <span className="text-sm text-white/75">{empty ? "todo al día" : total === 1 ? "cosa por atender" : "cosas por atender"}</span>
+        </p>
+      </div>
       {empty && (
         <p className="rounded-xl border border-dashed border-border bg-white p-5 text-center text-sm text-muted">
-          Todo al día. Nada pendiente por ahora.
+          Nada pendiente por ahora. Cuando tu socio te escriba o te pida algo, aparece aquí.
         </p>
       )}
 
       {msgs.length > 0 && (
-        <Group icon={<Mail size={15} />} title="Mensajes de tu socio" color="#EA580C">
+        <Group icon={<Mail size={18} />} title="Mensajes de tu socio" color="#EA580C" count={msgs.length}>
           {msgs.map((m) => (
             <li key={m.id} className="flex items-start gap-2">
               <div className="min-w-0 flex-1">
@@ -76,7 +85,7 @@ export async function PendingList({ userId }: { userId: string }) {
       )}
 
       {review.length > 0 && (
-        <Group icon={<SearchCheck size={15} />} title="Te entregaron, por revisar" color="#0891B2">
+        <Group icon={<SearchCheck size={18} />} title="Te entregaron, por revisar" color="#0891B2" count={review.length}>
           {review.map((r) => (
             <li key={r.id}>
               <Link href="/panel/solicitudes" className="block hover:text-purple">
@@ -91,7 +100,7 @@ export async function PendingList({ userId }: { userId: string }) {
       )}
 
       {owe.length > 0 && (
-        <Group icon={<Inbox size={15} />} title="Te piden" color="#DC2626">
+        <Group icon={<Inbox size={18} />} title="Te piden" color="#DC2626" count={owe.length}>
           {owe.map((r) => (
             <li key={r.id}>
               <Link href="/panel/solicitudes" className="block hover:text-purple">
@@ -107,7 +116,7 @@ export async function PendingList({ userId }: { userId: string }) {
       )}
 
       {rems.length > 0 && (
-        <Group icon={<BellRing size={15} />} title="Recordatorios de hoy y atrasados" color="#9333EA">
+        <Group icon={<BellRing size={18} />} title="Recordatorios de hoy y atrasados" color="#9333EA" count={rems.length}>
           {rems.map((r) => {
             const day = r.starts_at ? toBogotaWall(r.starts_at).slice(0, 10) : today;
             return (
@@ -137,13 +146,19 @@ export async function PendingList({ userId }: { userId: string }) {
   );
 }
 
-function Group({ icon, title, color, children }: { icon: React.ReactNode; title: string; color: string; children: React.ReactNode }) {
+function Group({ icon, title, color, count, children }: { icon: React.ReactNode; title: string; color: string; count: number; children: React.ReactNode }) {
   return (
-    <section className="rounded-xl border border-border bg-white p-4" style={{ borderTopColor: color, borderTopWidth: 3 }}>
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold" style={{ color }}>
-        {icon} {title}
+    <section className="rise overflow-hidden rounded-xl border border-border bg-white shadow-sm" style={{ borderLeftColor: color, borderLeftWidth: 4 }}>
+      <h3 className="flex items-center gap-2.5 px-4 pt-3 pb-2 text-[0.95rem] font-bold text-navy">
+        <span className="flex size-8 items-center justify-center rounded-lg text-white" style={{ backgroundColor: color }}>
+          {icon}
+        </span>
+        <span className="flex-1">{title}</span>
+        <span className="rounded-full px-2 py-0.5 text-xs font-bold text-white" style={{ backgroundColor: color }}>
+          {count}
+        </span>
       </h3>
-      <ul className="flex flex-col gap-3 text-sm">{children}</ul>
+      <ul className="flex flex-col divide-y divide-border px-4 pb-2 text-sm [&>li]:py-2.5">{children}</ul>
     </section>
   );
 }

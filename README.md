@@ -44,3 +44,15 @@ Antes de aplicarlas, probar los permisos en local (PGlite, sin servidor):
 ```bash
 pnpm test:rls
 ```
+
+## Firmas electrónicas (Fase 5)
+
+Los clientes firman por un enlace sin cuenta; el servidor valida el token y sella
+el PDF con `SUPABASE_SERVICE_ROLE_KEY` (Supabase → Project Settings → API →
+`service_role`). Esa clave:
+
+- va **solo** en Netlify → Environment variables (y en `.env.local` para pruebas),
+- **nunca** lleva el prefijo `NEXT_PUBLIC_` ni se pega en chats o documentos,
+- salta RLS: el código la usa únicamente en `lib/supabase/admin.ts`.
+
+Verificación pública de PDFs firmados: `/verificar`.

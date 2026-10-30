@@ -219,3 +219,13 @@ body {
 }
 .tiptap-doc .ProseMirror-selectednode { outline: 2px solid var(--color-cyan); }
 .tiptap-doc p.is-editor-empty:first-child::before { content: "Empieza a escribir…"; color: var(--color-muted); float: left; height: 0; pointer-events: none; }
+
+/* Calendario compacto del inicio: deja más espacio a los pendientes */
+.agenda-compact .fc { font-size: 0.78rem; }
+.agenda-compact .fc .fc-toolbar-title { font-size: 1rem; }
+.agenda-compact .fc .fc-button { padding: 0.25rem 0.5rem; font-size: 0.72rem; }
+.agenda-compact .fc .fc-toolbar.fc-header-toolbar { margin-bottom: 0.6rem; }
+.agenda-compact .fc .fc-daygrid-day-frame { min-height: 4.2rem; }
+.agenda-compact .fc .fc-daygrid-day-number { padding: 2px 4px; font-size: 0.72rem; }
+.agenda-compact .fc .fc-col-header-cell-cushion { padding: 3px 2px; font-size: 0.72rem; }
+.agenda-compact .fc-event { font-size: 0.7rem; padding: 0 2px; }

@@ -13,6 +13,7 @@ import { formatDateTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import { loadVersion, saveDocument } from "@/app/panel/documentos/actions";
 import { registerUpload } from "@/app/panel/carpeta/actions";
+import { SendToSign } from "@/components/firmas/SendToSign";
 import { PageBreak } from "./page-break";
 import { PdfPreview, buildPdf } from "./PdfPreview";
 import { Toolbar } from "./Toolbar";
@@ -31,6 +32,7 @@ export interface EditorDoc {
 interface Props {
   doc: EditorDoc;
   projects: { id: string; name: string }[];
+  partners: { id: string; fullName: string }[];
   versions: { id: string; version: number; createdAt: string; by: string }[];
 }
 
@@ -41,9 +43,9 @@ function slug(s: string) {
 }
 
 /** Editor tipo Overleaf, modo visual: a la izquierda se escribe, a la derecha el PDF con la plantilla Nexus. */
-export function DocumentEditor({ doc, projects, versions }: Props) {
+export function DocumentEditor({ doc, projects, partners, versions }: Props) {
   const template = getTemplate(doc.template);
-  const readOnly = doc.status === "firmado";
+  const readOnly = doc.status !== "borrador";
   const [title, setTitle] = useState(doc.title);
   const [projectId, setProjectId] = useState<string | null>(doc.projectId);
   const [vars, setVars] = useState<Record<string, string>>(doc.variables);
@@ -200,7 +202,7 @@ export function DocumentEditor({ doc, projects, versions }: Props) {
           aria-label="Título del documento"
         />
         <span className="text-xs text-muted">
-          {readOnly ? "Firmado · solo lectura" : dirty ? "Cambios sin guardar" : `Guardado · v${version}`}
+          {doc.status === "firmado" ? "Firmado · solo lectura" : doc.status === "en_firma" ? "En firma · solo lectura" : dirty ? "Cambios sin guardar" : `Guardado · v${version}`}
         </span>
         {!readOnly && (
           <button type="button" onClick={save} disabled={saving || !dirty} className="shine inline-flex items-center gap-1.5 rounded-lg bg-purple px-4 py-2 text-sm font-semibold text-white hover:bg-violet disabled:opacity-50" title="Ctrl + S">
@@ -213,6 +215,16 @@ export function DocumentEditor({ doc, projects, versions }: Props) {
         <button type="button" onClick={sendToFolder} disabled={exporting} className={btn} title="Guarda el PDF en la carpeta compartida del proyecto">
           <FolderUp size={16} /> A la carpeta
         </button>
+        {doc.status === "borrador" && (
+          <SendToSign
+            documentId={doc.id}
+            title={title}
+            content={content}
+            vars={vars}
+            partners={partners}
+            disabled={dirty ? "Guarda los cambios antes de enviar a firmar." : undefined}
+          />
+        )}
         <button type="button" onClick={() => setShowVersions(!showVersions)} className={btn} aria-expanded={showVersions}>
           <History size={16} /> Versiones
         </button>

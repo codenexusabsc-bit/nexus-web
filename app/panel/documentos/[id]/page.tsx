@@ -41,6 +41,7 @@ async function Content({ params }: { params: Promise<{ id: string }> }) {
       <DocumentEditor
         doc={doc}
         projects={projects.filter((p) => !p.archived).map((p) => ({ id: p.id, name: p.name }))}
+        partners={partners}
         versions={versions.map((v) => ({ id: v.id, version: v.version, createdAt: v.createdAt, by: names[v.createdBy ?? ""] ?? "—" }))}
       />
       <div className="flex flex-wrap gap-3 border-t border-border pt-4 text-sm">

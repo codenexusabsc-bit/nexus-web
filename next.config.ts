@@ -15,9 +15,12 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/panel/marca/[archivo]": ["./private/marca/**"],
     "/presentacion": ["./public/marca/portal.png"],
+    // El sello E se lee del disco al sellar un PDF firmado
+    "/panel/firmas/[id]": ["./private/marca/sello-e.png"],
+    "/firmar/[token]": ["./private/marca/sello-e.png"],
   },
   // react-pdf trae binarios (yoga) que no deben empaquetarse.
-  serverExternalPackages: ["@react-pdf/renderer"],
+  serverExternalPackages: ["@react-pdf/renderer", "pdf-lib"],
   headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

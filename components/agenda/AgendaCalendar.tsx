@@ -100,14 +100,17 @@ export function AgendaCalendar({ partners, userId, names }: { partners: Partner[
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted" aria-label="Colores del calendario">
-          {Object.entries(CATEGORIES).map(([k, c]) => (
-            <li key={k} className="inline-flex items-center gap-1.5">
-              <span className="size-2.5 rounded-full" style={{ backgroundColor: c.color }} aria-hidden="true" />
-              {c.label}
-            </li>
-          ))}
-        </ul>
+        <details className="text-xs text-muted">
+          <summary className="cursor-pointer select-none">Colores del calendario</summary>
+          <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1">
+            {Object.entries(CATEGORIES).map(([k, c]) => (
+              <li key={k} className="inline-flex items-center gap-1.5">
+                <span className="size-2.5 rounded-full" style={{ backgroundColor: c.color }} aria-hidden="true" />
+                {c.label}
+              </li>
+            ))}
+          </ul>
+        </details>
         <div className="flex gap-2">
           <button type="button" onClick={() => open(null, newDraft("privado", partners, userId))} className="inline-flex items-center gap-1.5 rounded-lg bg-purple px-3 py-2 text-sm font-semibold text-white hover:bg-violet">
             <BellPlus size={16} /> Recordatorio
@@ -126,7 +129,7 @@ export function AgendaCalendar({ partners, userId, names }: { partners: Partner[
         </p>
       )}
 
-      <div className="agenda-calendar rounded-2xl border border-border bg-white p-3 sm:p-4">
+      <div className="agenda-calendar agenda-compact rounded-2xl border border-border bg-white p-2.5 sm:p-3">
         <FullCalendar
           ref={ref}
           plugins={[dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin]}
@@ -141,7 +144,7 @@ export function AgendaCalendar({ partners, userId, names }: { partners: Partner[
           selectable
           selectMirror
           editable
-          dayMaxEvents={3}
+          dayMaxEvents={2}
           nowIndicator
           eventTimeFormat={{ hour: "2-digit", minute: "2-digit", hour12: false }}
           slotLabelFormat={{ hour: "2-digit", minute: "2-digit", hour12: false }}

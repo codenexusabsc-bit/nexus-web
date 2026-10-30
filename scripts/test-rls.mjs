@@ -16,7 +16,7 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 alter table storage.objects enable row level security;
 grant select, insert, delete on storage.objects to authenticated;
 `);
-for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql"]) {
+for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql", "006_firmas.sql"]) {
   await db.exec(readFileSync(M + f, "utf8")); console.log("✓", f);
 }
 const A = "11111111-1111-1111-1111-111111111111", B = "22222222-2222-2222-2222-222222222222", X = "33333333-3333-3333-3333-333333333333";
@@ -112,5 +112,24 @@ err = null; try { await as(A, `select public.save_document('${doc}', 'cambio', '
 ok(err && err.includes("firmado"), "un documento firmado no se edita");
 err = null; try { await as(A, `update public.document_versions set title = 'x'`); } catch (e) { err = e.message; }
 ok(err !== null, "las versiones no se modifican");
+// ---- 006: firmas ----
+const H = "a".repeat(64);
+const doc2 = (await as(A, "insert into public.documents (title) values ('Contrato') returning id")).rows[0].id;
+const req = (await as(A, `insert into public.signature_requests (document_id, title, original_path, original_sha256) values ('${doc2}', 'Contrato', 'firmas/x/original.pdf', '${H}') returning id`)).rows[0].id;
+await as(A, `insert into public.signers (request_id, kind, profile_id, name) values ('${req}', 'socio', '${A}', 'A'), ('${req}', 'socio', '${B}', 'B')`);
+await as(A, `insert into public.signers (request_id, kind, name, token_hash) values ('${req}', 'cliente', 'Cliente', '${"b".repeat(64)}')`);
+ok((await as(A, `update public.signers set signed_at = now() where profile_id = '${A}' returning id`)).rows.length === 1, "socio firma su fila");
+ok((await as(A, `update public.signers set signed_at = now() where profile_id = '${B}' returning id`)).rows.length === 0, "socio no firma por el otro");
+ok((await as(A, `update public.signers set signed_at = now() where kind = 'cliente' returning id`)).rows.length === 0, "socio no firma por el cliente");
+err = null; try { await as(A, `update public.signers set name = 'otro' where profile_id = '${A}'`); } catch (e) { err = e.message; }
+ok(err !== null, "no se cambia el nombre del firmante");
+await db.exec("set role anon;"); err = null; try { await db.query("select * from public.signers"); } catch (e) { err = e.message; } await db.exec("reset role;");
+ok(err !== null, "anon no ve firmantes ni tokens");
+await db.exec(`update public.documents set status = 'en_firma' where id = '${doc2}'`);
+err = null; try { await as(A, `select public.save_document('${doc2}', 'x', '{}', '{}', null)`); } catch (e) { err = e.message; }
+ok(err && err.includes("en firma"), "documento en firma no se edita");
+err = null; try { await as(A, `update public.profiles set role = 'partner', signature_path = 'x' where id = '${A}'`); } catch (e) { err = e.message; }
+ok(err !== null, "no se cambia el rol al guardar la firma");
+ok((await as(A, `update public.profiles set signature_path = 'sello-e' where id = '${A}' returning id`)).rows.length === 1, "socio guarda su firma");
 console.log(`\n${pass} ok, ${fail} fallas`);
 process.exit(fail ? 1 : 0);
