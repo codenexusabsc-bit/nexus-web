@@ -38,7 +38,7 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 | 4 | Editor de documentos con plantilla Nexus | 🔨 Migración aplicada, falta probar en el panel |
 | 5 | Firmas (socios y clientes) | 🔨 Migración 006 y clave de servidor listas (29/10/2026), falta probar una firma real |
 | 6 | Generador de piezas para redes | ✅ Completada (sin migración; las piezas se guardan en la carpeta compartida) |
-| 7 | Cotizaciones y cuentas de cobro | ⏳ Pendiente |
+| 7 | Cotizaciones y cuentas de cobro | 🔨 Código listo, falta aplicar la migración 008 |
 | 8 | Prospectos y tareas de proyecto | ⏳ Pendiente |
 | 9 | Utilidades de marca | 🔸 Adelantado: panel desplegable de logos y sellos (sellos solo con sesión) |
 

@@ -16,7 +16,7 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 alter table storage.objects enable row level security;
 grant select, insert, delete on storage.objects to authenticated;
 `);
-for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql", "006_firmas.sql", "007_sitio_borrador.sql"]) {
+for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql", "006_firmas.sql", "007_sitio_borrador.sql", "008_cotizaciones.sql"]) {
   await db.exec(readFileSync(M + f, "utf8")); console.log("✓", f);
 }
 const A = "11111111-1111-1111-1111-111111111111", B = "22222222-2222-2222-2222-222222222222", X = "33333333-3333-3333-3333-333333333333";
@@ -145,5 +145,20 @@ const pub = (await db.query("select content->'hero'->>'title' t, draft from publ
 ok(pub.t === "Nuevo título" && pub.draft === null, "publicar aplica el contenido y limpia el borrador");
 const names = (await db.query("select name from public.services order by position")).rows.map((r) => r.name).join();
 ok(names === "Webs,Nuevo servicio", "publicar sincroniza servicios (renombra, crea y quita)");
+// ---- 008: cotizaciones y cobros ----
+const docQ = (await as(A, "insert into public.documents (title) values ('Cotización 1') returning id")).rows[0].id;
+const q1 = (await as(A, `insert into public.quotes (client_name, items, total, document_id) values ('Bonett', '[{"description":"Web","qty":1,"unitPrice":1000000}]', 1000000, '${docQ}') returning number`)).rows[0].number;
+const q2 = (await as(B, "insert into public.quotes (client_name) values ('Otro') returning number")).rows[0].number;
+ok(q2 === q1 + 1, "las cotizaciones se numeran consecutivo");
+ok((await as(X, "select * from public.quotes")).rows.length === 0, "no socio no ve cotizaciones");
+await db.exec(`update public.documents set status = 'firmado' where id = '${docQ}'`);
+ok((await db.query(`select status from public.quotes where document_id = '${docQ}'`)).rows[0].status === "aceptada", "firmar el documento acepta la cotización");
+const c1 = (await as(A, "insert into public.collection_accounts (client_name, concept, amount) values ('Bonett', 'Desarrollo web', 500000) returning number")).rows[0].number;
+ok(c1 === 1, "la primera cuenta de cobro es la número 1");
+err = null; try { await as(A, "update public.collection_accounts set status = 'pagada'"); } catch (e) { err = e.message; }
+ok(err !== null, "pagada exige fecha de pago");
+err = null; try { await as(A, "insert into public.collection_accounts (client_name, concept, amount) values ('x', 'y', 0)"); } catch (e) { err = e.message; }
+ok(err !== null, "valor debe ser mayor que cero");
+ok((await as(X, "select * from public.billing_settings")).rows.length === 0, "no socio no ve datos de facturación");
 console.log(`\n${pass} ok, ${fail} fallas`);
 process.exit(fail ? 1 : 0);

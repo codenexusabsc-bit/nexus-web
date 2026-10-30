@@ -37,7 +37,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
     items: [
       { href: "/panel/sitio", label: "Sitio web y mensajes", icon: Globe },
       { href: "/panel/prospectos", label: "Prospectos", icon: Users, soon: 8 },
-      { href: "/panel/cotizaciones", label: "Cotizaciones y cobros", icon: Receipt, soon: 7 },
+      { href: "/panel/cotizaciones", label: "Cotizaciones y cobros", icon: Receipt },
     ],
   },
   {
