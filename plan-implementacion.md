@@ -38,8 +38,8 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 | 4 | Editor de documentos con plantilla Nexus | 🔨 Migración aplicada, falta probar en el panel |
 | 5 | Firmas (socios y clientes) | 🔨 Migración 006 y clave de servidor listas (29/10/2026), falta probar una firma real |
 | 6 | Generador de piezas para redes | ✅ Completada (sin migración; las piezas se guardan en la carpeta compartida) |
-| 7 | Cotizaciones y cuentas de cobro | 🔨 Código listo, falta aplicar la migración 008 |
-| 8 | Prospectos y tareas de proyecto | 🔨 Código listo, falta aplicar la migración 009 |
+| 7 | Cotizaciones y cuentas de cobro | 🔨 Migración aplicada, falta probar en el panel |
+| 8 | Prospectos y tareas de proyecto | 🔨 Migración aplicada, falta probar en el panel |
 | 9 | Utilidades de marca | ✅ Kit de marca, firma de correo, tarjetas digitales con QR y vCard (sin migración). Portafolio: pendiente |
 
 ---
@@ -279,13 +279,10 @@ RLS activa en todas las tablas: solo `partner` lee y escribe; el público solo a
 
 ---
 
-## Migraciones pendientes de aplicar (al 29/10/2026)
+## Migraciones
 
-- `007_sitio_borrador.sql` — borrador y vista previa del sitio
-- `008_cotizaciones.sql` — cotizaciones, cuentas de cobro y datos de facturación
-- `009_prospectos_tareas.sql` — seguimiento de prospectos y tareas por proyecto
+Aplicadas en Supabase: 001 a 009 (29/10/2026). Las nuevas se prueban antes con `pnpm test:rls`.
 
 ## Preguntas abiertas
 
-1. Para cuentas de cobro: ¿a nombre de quién se emiten y con qué datos (cédula / RUT)?
-2. ¿Qué número de WhatsApp va en el botón flotante de la landing?
+1. ¿Qué número de WhatsApp va en el botón flotante de la landing?
