@@ -115,6 +115,28 @@ export function AgendaModal({
           </div>
         )}
 
+        {!editing && entry?.source === "tarea" && (
+          <div className="flex flex-col gap-3">
+            <Badge category="tarea" />
+            <p className="text-lg font-semibold text-navy">{entry.title}</p>
+            <p className="text-sm text-muted">Tarea con fecha límite este día{entry.projectName && ` · proyecto ${entry.projectName}`}.</p>
+            <Link href={`/panel/carpeta/${entry.projectId}`} className="inline-flex w-fit items-center gap-2 rounded-lg bg-purple px-4 py-2 text-sm font-semibold text-white hover:bg-violet">
+              Ir al proyecto
+            </Link>
+          </div>
+        )}
+
+        {!editing && entry?.source === "prospecto" && (
+          <div className="flex flex-col gap-3">
+            <Badge category="seguimiento" />
+            <p className="text-lg font-semibold text-navy">{entry.title}</p>
+            <p className="text-sm text-muted">{entry.action || "Seguimiento pendiente"}.</p>
+            <Link href="/panel/prospectos" className="inline-flex w-fit items-center gap-2 rounded-lg bg-purple px-4 py-2 text-sm font-semibold text-white hover:bg-violet">
+              Ir a prospectos
+            </Link>
+          </div>
+        )}
+
         {!editing && entry?.source === "agenda" && (
           <div className={`flex flex-col gap-3 ${pending ? "opacity-60" : ""}`}>
             <Badge category={entry.category} />

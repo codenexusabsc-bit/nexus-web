@@ -28,7 +28,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
     title: "Trabajo",
     items: [
       { href: "/panel", label: "Agenda", icon: CalendarDays },
-      { href: "/panel/carpeta", label: "Carpeta compartida", icon: FolderOpen },
+      { href: "/panel/carpeta", label: "Proyectos y carpeta", icon: FolderOpen },
       { href: "/panel/solicitudes", label: "Solicitudes", icon: Inbox },
     ],
   },
@@ -36,7 +36,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
     title: "Clientes",
     items: [
       { href: "/panel/sitio", label: "Sitio web y mensajes", icon: Globe },
-      { href: "/panel/prospectos", label: "Prospectos", icon: Users, soon: 8 },
+      { href: "/panel/prospectos", label: "Prospectos", icon: Users },
       { href: "/panel/cotizaciones", label: "Cotizaciones y cobros", icon: Receipt },
     ],
   },

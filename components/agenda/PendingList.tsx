@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BellRing, Inbox, Mail, MessageSquareText, SearchCheck } from "lucide-react";
+import { BellRing, CalendarClock, ListTodo, Inbox, Mail, MessageSquareText, SearchCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { fromBogotaWall, toBogotaWall, addDays } from "@/lib/dates";
 import { firstName, formatDate, formatDateTime } from "@/lib/format";
@@ -24,7 +24,7 @@ export async function PendingList({ userId }: { userId: string }) {
   const today = toBogotaWall(new Date()).slice(0, 10);
   const endOfToday = fromBogotaWall(`${addDays(today, 1)}T00:00`);
 
-  const [messages, reminders, toReview, toMe, partners, leads] = await Promise.all([
+  const [messages, reminders, toReview, toMe, partners, leads, tasks, followUps] = await Promise.all([
     supabase.from("agenda_items").select("id, title, notes, starts_at, created_by").eq("kind", "mensaje").eq("recipient", userId).is("seen_at", null).order("starts_at"),
     supabase
       .from("agenda_items")
@@ -39,6 +39,14 @@ export async function PendingList({ userId }: { userId: string }) {
     supabase.from("doc_requests").select("id, title, requested_by, due_date").eq("requested_to", userId).in("status", ["pending", "returned"]).order("due_date", { nullsFirst: false }),
     supabase.from("profiles").select("id, full_name").eq("role", "partner"),
     supabase.from("leads").select("id", { count: "exact", head: true }).eq("status", "nuevo"),
+    supabase.from("tasks").select("id, title, due_on, project_id").neq("status", "hecha").eq("assigned_to", userId).lte("due_on", today).order("due_on"),
+    supabase
+      .from("leads")
+      .select("id, name, next_action, next_action_on")
+      .not("status", "in", "(ganado,perdido)")
+      .or(`assigned_to.eq.${userId},assigned_to.is.null`)
+      .lte("next_action_on", today)
+      .order("next_action_on"),
   ]);
 
   const names = Object.fromEntries(((partners.data ?? []) as { id: string; full_name: string }[]).map((p) => [p.id, firstName(p.full_name)]));
@@ -47,7 +55,9 @@ export async function PendingList({ userId }: { userId: string }) {
   const review = (toReview.data ?? []) as Row[];
   const owe = (toMe.data ?? []) as Row[];
   const newLeads = leads.count ?? 0;
-  const total = msgs.length + rems.length + review.length + owe.length + newLeads;
+  const myTasks = (tasks.data ?? []) as { id: string; title: string; due_on: string; project_id: string }[];
+  const follow = (followUps.data ?? []) as { id: string; name: string; next_action: string; next_action_on: string }[];
+  const total = msgs.length + rems.length + review.length + owe.length + newLeads + myTasks.length + follow.length;
   const empty = total === 0;
 
   return (
@@ -134,8 +144,34 @@ export async function PendingList({ userId }: { userId: string }) {
         </Group>
       )}
 
+      {myTasks.length > 0 && (
+        <Group icon={<ListTodo size={18} />} title="Tus tareas para hoy y atrasadas" color="#4F46E5" count={myTasks.length}>
+          {myTasks.map((t) => (
+            <li key={t.id}>
+              <Link href={`/panel/carpeta/${t.project_id}`} className="block hover:text-purple">
+                <p className="font-medium text-navy">{t.title}</p>
+                <p className={`text-xs ${t.due_on < today ? "font-semibold text-red-600" : "text-muted"}`}>{t.due_on < today ? `Atrasada · ${formatDate(t.due_on)}` : "Hoy"}</p>
+              </Link>
+            </li>
+          ))}
+        </Group>
+      )}
+
+      {follow.length > 0 && (
+        <Group icon={<CalendarClock size={18} />} title="Seguimiento a prospectos" color="#CA8A04" count={follow.length}>
+          {follow.map((l) => (
+            <li key={l.id}>
+              <Link href="/panel/prospectos" className="block hover:text-purple">
+                <p className="font-medium text-navy">{l.next_action || "Seguimiento"}: {l.name}</p>
+                <p className={`text-xs ${l.next_action_on < today ? "font-semibold text-red-600" : "text-muted"}`}>{l.next_action_on < today ? `Atrasado · ${formatDate(l.next_action_on)}` : "Hoy"}</p>
+              </Link>
+            </li>
+          ))}
+        </Group>
+      )}
+
       {newLeads > 0 && (
-        <Link href="/panel/sitio#mensajes" className="flex items-center gap-3 rounded-xl border border-violet/40 bg-violet/10 p-4 text-sm text-navy transition hover:border-violet">
+        <Link href="/panel/prospectos" className="flex items-center gap-3 rounded-xl border border-violet/40 bg-violet/10 p-4 text-sm text-navy transition hover:border-violet">
           <MessageSquareText size={18} className="text-violet" />
           <span>
             <b>{newLeads}</b> {newLeads === 1 ? "mensaje nuevo desde la página" : "mensajes nuevos desde la página"}

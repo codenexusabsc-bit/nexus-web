@@ -5,6 +5,8 @@ import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getProject, listFiles, listPartners, listTags } from "@/lib/carpeta";
+import { listTasks } from "@/lib/prospectos-data";
+import { TasksBoard } from "@/components/prospectos/TasksBoard";
 import { firstName } from "@/lib/format";
 import { one, type SearchParams } from "@/lib/search-params";
 import { FileFilters } from "@/components/carpeta/FileFilters";
@@ -42,7 +44,8 @@ async function Content({ params, searchParams }: { params: Promise<{ id: string 
   if (!project) notFound();
 
   const filters = { q: one(sp.q), tagId: one(sp.etiqueta), by: one(sp.por), userId: user.id };
-  const [files, tags, partners] = await Promise.all([listFiles(id, filters), listTags(), listPartners()]);
+  const [files, tags, partners, tasks] = await Promise.all([listFiles(id, filters), listTags(), listPartners(), listTasks(id)]);
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "America/Bogota" }).format(new Date());
   const names = Object.fromEntries(partners.map((p) => [p.id, firstName(p.fullName)]));
 
   return (
@@ -58,6 +61,12 @@ async function Content({ params, searchParams }: { params: Promise<{ id: string 
         <ZipButton projectId={project.id} projectName={project.name} />
       </div>
 
+      <section className="flex flex-col gap-3">
+        <h2 className="font-pixel text-sm text-purple">TAREAS</h2>
+        <TasksBoard projectId={project.id} tasks={tasks} partners={partners.map((p) => ({ id: p.id, name: firstName(p.fullName) }))} today={today} />
+      </section>
+
+      <h2 className="font-pixel text-sm text-purple">ARCHIVOS</h2>
       <UploadZone projectId={project.id} tags={tags} />
 
       <FileFilters tags={tags} q={filters.q} tagId={filters.tagId} by={filters.by} />

@@ -16,7 +16,7 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 alter table storage.objects enable row level security;
 grant select, insert, delete on storage.objects to authenticated;
 `);
-for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql", "006_firmas.sql", "007_sitio_borrador.sql", "008_cotizaciones.sql"]) {
+for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql", "006_firmas.sql", "007_sitio_borrador.sql", "008_cotizaciones.sql", "009_prospectos_tareas.sql"]) {
   await db.exec(readFileSync(M + f, "utf8")); console.log("✓", f);
 }
 const A = "11111111-1111-1111-1111-111111111111", B = "22222222-2222-2222-2222-222222222222", X = "33333333-3333-3333-3333-333333333333";
@@ -160,5 +160,14 @@ ok(err !== null, "pagada exige fecha de pago");
 err = null; try { await as(A, "insert into public.collection_accounts (client_name, concept, amount) values ('x', 'y', 0)"); } catch (e) { err = e.message; }
 ok(err !== null, "valor debe ser mayor que cero");
 ok((await as(X, "select * from public.billing_settings")).rows.length === 0, "no socio no ve datos de facturación");
+// ---- 009: prospectos y tareas ----
+await asAnon("insert into public.leads (name, phone, message) values ('Lead web', '3000000000', 'Quiero una web')");
+err = null; try { await asAnon("insert into public.leads (name, phone, message, notes) values ('x', '1', 'y', 'nota')"); } catch (e) { err = e.message; }
+ok(err !== null, "anon no escribe notas internas del prospecto");
+ok((await as(A, "update public.leads set notes = 'Llamar el lunes', next_action_on = current_date where name = 'Lead web' returning id")).rows.length === 1, "socio agrega seguimiento");
+ok((await as(A, "insert into public.leads (name, email, message, source) values ('Manual', 'm@x.co', 'Referido', 'manual') returning id")).rows.length === 1, "socio crea prospecto manual");
+const t1 = (await as(A, `insert into public.tasks (project_id, title, assigned_to) values ('${proj}', 'Diseñar portada', '${B}') returning id`)).rows[0].id;
+ok((await as(B, `update public.tasks set status = 'hecha', completed_at = now() where id = '${t1}' returning id`)).rows.length === 1, "el socio asignado completa la tarea");
+ok((await as(X, "select * from public.tasks")).rows.length === 0, "no socio no ve tareas");
 console.log(`\n${pass} ok, ${fail} fallas`);
 process.exit(fail ? 1 : 0);

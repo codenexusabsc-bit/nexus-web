@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
   const fromDate = start.slice(0, 10);
   const toDate = end.slice(0, 10);
 
-  const [agenda, requests, partners, projects] = await Promise.all([
+  const [agenda, requests, partners, projects, tasks, leads] = await Promise.all([
     supabase.from("agenda_items").select("*").gte("starts_at", from).lt("starts_at", to),
     supabase
       .from("doc_requests")
@@ -34,6 +34,20 @@ export async function GET(request: NextRequest) {
       .neq("status", "accepted"),
     supabase.from("profiles").select("id, full_name").eq("role", "partner"),
     supabase.from("projects").select("id, name"),
+    supabase
+      .from("tasks")
+      .select("id, title, project_id, due_on")
+      .neq("status", "hecha")
+      .or(`assigned_to.eq.${userId},assigned_to.is.null`)
+      .gte("due_on", fromDate)
+      .lt("due_on", toDate),
+    supabase
+      .from("leads")
+      .select("id, name, next_action, next_action_on")
+      .not("status", "in", "(ganado,perdido)")
+      .or(`assigned_to.eq.${userId},assigned_to.is.null`)
+      .gte("next_action_on", fromDate)
+      .lt("next_action_on", toDate),
   ]);
 
   const names = Object.fromEntries(((partners.data ?? []) as { id: string; full_name: string }[]).map((p) => [p.id, firstName(p.full_name)]));
@@ -101,6 +115,36 @@ export async function GET(request: NextRequest) {
           projectName: projectNames[r.project_id] ?? "",
           who: names[r.requested_to === userId ? r.requested_by : r.requested_to] ?? "",
         } satisfies CalendarEntry,
+      },
+    });
+  }
+
+  // Tareas y seguimientos (si la migración 009 aún no está, estas consultas fallan sin romper la agenda)
+  for (const t of (tasks.data ?? []) as { id: string; title: string; project_id: string; due_on: string }[]) {
+    events.push({
+      id: `tarea-${t.id}`,
+      title: `Tarea: ${t.title}`,
+      start: t.due_on,
+      allDay: true,
+      editable: false,
+      backgroundColor: CATEGORIES.tarea.color,
+      borderColor: CATEGORIES.tarea.color,
+      extendedProps: {
+        entry: { source: "tarea", category: "tarea", taskId: t.id, projectId: t.project_id, title: t.title, projectName: projectNames[t.project_id] ?? "" } satisfies CalendarEntry,
+      },
+    });
+  }
+  for (const l of (leads.data ?? []) as { id: string; name: string; next_action: string; next_action_on: string }[]) {
+    events.push({
+      id: `lead-${l.id}`,
+      title: `${l.next_action || "Seguimiento"}: ${l.name}`,
+      start: l.next_action_on,
+      allDay: true,
+      editable: false,
+      backgroundColor: CATEGORIES.seguimiento.color,
+      borderColor: CATEGORIES.seguimiento.color,
+      extendedProps: {
+        entry: { source: "prospecto", category: "seguimiento", leadId: l.id, title: l.name, action: l.next_action } satisfies CalendarEntry,
       },
     });
   }

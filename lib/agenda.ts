@@ -57,7 +57,9 @@ export type AgendaCategory =
   | "mensaje-enviado"
   | "entregar"
   | "revisar"
-  | "esperando";
+  | "esperando"
+  | "tarea"
+  | "seguimiento";
 
 export const CATEGORIES: Record<AgendaCategory, { label: string; color: string }> = {
   privado: { label: "Mis recordatorios", color: "#9333EA" },
@@ -67,6 +69,8 @@ export const CATEGORIES: Record<AgendaCategory, { label: string; color: string }
   entregar: { label: "Documentos que me piden", color: "#DC2626" },
   revisar: { label: "Entregas por revisar", color: "#0891B2" },
   esperando: { label: "Documentos que pedí", color: "#64748B" },
+  tarea: { label: "Mis tareas de proyecto", color: "#4F46E5" },
+  seguimiento: { label: "Seguimiento a prospectos", color: "#CA8A04" },
 };
 
 export function categoryOf(item: AgendaItem, userId: string): AgendaCategory {
@@ -84,4 +88,6 @@ export type CalendarEntry =
       title: string;
       projectName: string;
       who: string;
-    };
+    }
+  | { source: "tarea"; category: "tarea"; taskId: string; projectId: string; title: string; projectName: string }
+  | { source: "prospecto"; category: "seguimiento"; leadId: string; title: string; action: string };
