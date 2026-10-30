@@ -45,7 +45,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
     items: [
       { href: "/panel/documentos", label: "Documentos", icon: FilePen },
       { href: "/panel/firmas", label: "Firmas", icon: PenLine },
-      { href: "/panel/piezas", label: "Piezas para redes", icon: Megaphone, soon: 6 },
+      { href: "/panel/piezas", label: "Piezas para redes", icon: Megaphone },
     ],
   },
 ];
