@@ -1,10 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { Plus, Save, Trash2 } from "lucide-react";
-import { toast } from "sonner";
-import type { SiteContent } from "@/lib/sitio";
-import { saveContent } from "@/app/panel/sitio/actions";
+import { Plus, Trash2 } from "lucide-react";
+import type { SiteContent } from "@/lib/sitio-shared";
 
 const input = "w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-purple";
 
@@ -65,18 +62,9 @@ function ItemList({
   );
 }
 
-/** Edita todos los textos de la landing; al guardar se publica en la siguiente visita. */
-export function ContentEditor({ initial }: { initial: SiteContent }) {
-  const [c, setC] = useState(initial);
-  const [pending, startTransition] = useTransition();
-  const set = <K extends keyof SiteContent>(key: K, value: SiteContent[K]) => setC((prev) => ({ ...prev, [key]: value }));
-
-  const save = () =>
-    startTransition(async () => {
-      const res = await saveContent(c);
-      if (res.error) toast.error(res.error);
-      else toast.success("Sitio actualizado. Ya se ve en la página pública.");
-    });
+/** Edita los textos de la landing dentro del borrador. */
+export function ContentEditor({ value: c, onChange }: { value: SiteContent; onChange: (v: SiteContent) => void }) {
+  const set = <K extends keyof SiteContent>(key: K, value: SiteContent[K]) => onChange({ ...c, [key]: value });
 
   return (
     <div className="flex flex-col gap-4">
@@ -124,11 +112,6 @@ export function ContentEditor({ initial }: { initial: SiteContent }) {
         </div>
       </Card>
 
-      <div className="sticky bottom-4 z-10 flex justify-end">
-        <button type="button" onClick={save} disabled={pending} className="shine inline-flex items-center gap-2 rounded-lg bg-purple px-5 py-3 font-semibold text-white shadow-lg shadow-purple/30 hover:bg-violet disabled:opacity-60">
-          <Save size={16} /> {pending ? "Publicando…" : "Guardar y publicar"}
-        </button>
-      </div>
     </div>
   );
 }

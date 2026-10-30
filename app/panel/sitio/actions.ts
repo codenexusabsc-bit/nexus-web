@@ -3,85 +3,56 @@
 import { revalidatePath, updateTag } from "next/cache";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
-import { SITE_TAG, contentSchema, type SiteContent } from "@/lib/sitio";
+import { SITE_TAG, draftSchema } from "@/lib/sitio";
+import type { SiteDraft } from "@/lib/sitio-shared";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/app/panel/carpeta/actions";
 
 const uuid = z.uuid({ error: "Identificador inválido." });
 
-function published() {
-  updateTag(SITE_TAG); // la landing y el PDF muestran el cambio en la siguiente visita
-  revalidatePath("/panel/sitio");
+function describe(error: z.ZodError): string {
+  const issue = error.issues[0];
+  const where = issue?.path.join(" › ");
+  return `${where ? `${where}: ` : ""}${issue?.message ?? "contenido inválido"}`;
 }
 
-export async function saveContent(content: SiteContent): Promise<ActionResult> {
+/** Guarda el borrador (no cambia la página pública). */
+export async function saveDraft(draft: SiteDraft): Promise<ActionResult> {
   const user = await getCurrentUser();
-  const parsed = contentSchema.safeParse(content);
-  if (!parsed.success) {
-    const issue = parsed.error.issues[0];
-    return { error: `${issue?.path.join(" › ") || "Contenido"}: ${issue?.message ?? "inválido"}` };
-  }
+  const parsed = draftSchema.safeParse(draft);
+  if (!parsed.success) return { error: describe(parsed.error) };
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("site_settings")
-    .update({ content: parsed.data, updated_at: new Date().toISOString(), updated_by: user.id })
+    .update({ draft: parsed.data, draft_updated_at: new Date().toISOString(), draft_updated_by: user.id })
     .eq("id", true)
     .select("id");
-  if (error || !data?.length) return { error: "No se pudo guardar. ¿Ya se aplicó la migración 003?" };
-  published();
+  if (error || !data?.length) return { error: "No se pudo guardar el borrador. ¿Ya se aplicó la migración 007?" };
+  revalidatePath("/panel/sitio", "layout");
   return {};
 }
 
-const serviceSchema = z.object({
-  id: uuid.optional(),
-  name: z.string().trim().min(1, { error: "El servicio necesita nombre." }).max(80),
-  description: z.string().trim().max(400),
-  idealFor: z.string().trim().max(200),
-  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, { error: "Color inválido." }),
-  visible: z.boolean(),
-});
-
-export async function saveService(input: z.input<typeof serviceSchema>): Promise<ActionResult> {
-  await getCurrentUser();
-  const parsed = serviceSchema.safeParse(input);
-  if (!parsed.success) return { error: parsed.error.issues[0]?.message };
-  const { id, idealFor, ...rest } = parsed.data;
-  const row = { ...rest, ideal_for: idealFor };
-
+/** Publica el borrador: la página pública y el PDF lo muestran en la siguiente visita. */
+export async function publishSite(draft: SiteDraft): Promise<ActionResult> {
+  const saved = await saveDraft(draft);
+  if (saved.error) return saved;
   const supabase = await createClient();
-  if (id) {
-    const { error } = await supabase.from("services").update(row).eq("id", id);
-    if (error) return { error: "No se pudo guardar el servicio." };
-  } else {
-    const { data: last } = await supabase.from("services").select("position").order("position", { ascending: false }).limit(1);
-    const position = ((last?.[0] as { position: number } | undefined)?.position ?? 0) + 1;
-    const { error } = await supabase.from("services").insert({ ...row, position });
-    if (error) return { error: "No se pudo crear el servicio." };
-  }
-  published();
+  const { error } = await supabase.rpc("publish_site");
+  if (error) return { error: "No se pudo publicar." };
+  updateTag(SITE_TAG);
+  revalidatePath("/panel/sitio", "layout");
   return {};
 }
 
-/** Guarda el orden: la lista de ids en el orden deseado. */
-export async function reorderServices(ids: string[]): Promise<ActionResult> {
+export async function discardDraft(): Promise<ActionResult> {
   await getCurrentUser();
-  if (!ids.every((i) => uuid.safeParse(i).success)) return { error: "Datos inválidos." };
   const supabase = await createClient();
-  const results = await Promise.all(
-    ids.map((id, i) => supabase.from("services").update({ position: i + 1 }).eq("id", id))
-  );
-  if (results.some((r) => r.error)) return { error: "No se pudo guardar el orden." };
-  published();
-  return {};
-}
-
-export async function deleteService(id: string): Promise<ActionResult> {
-  await getCurrentUser();
-  if (!uuid.safeParse(id).success) return { error: "Datos inválidos." };
-  const supabase = await createClient();
-  const { error } = await supabase.from("services").delete().eq("id", id);
-  if (error) return { error: "No se pudo borrar el servicio." };
-  published();
+  const { error } = await supabase
+    .from("site_settings")
+    .update({ draft: null, draft_updated_at: null, draft_updated_by: null })
+    .eq("id", true);
+  if (error) return { error: "No se pudo descartar el borrador." };
+  revalidatePath("/panel/sitio", "layout");
   return {};
 }
 
@@ -96,5 +67,16 @@ export async function setLeadStatus(id: string, status: string): Promise<ActionR
   const { error } = await supabase.from("leads").update({ status }).eq("id", id);
   if (error) return { error: "No se pudo actualizar el mensaje." };
   revalidatePath("/panel", "layout");
+  return {};
+}
+
+/** Publica el borrador ya guardado (desde la vista previa). */
+export async function publishCurrentDraft(): Promise<ActionResult> {
+  await getCurrentUser();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("publish_site");
+  if (error) return { error: "No se pudo publicar." };
+  updateTag(SITE_TAG);
+  revalidatePath("/panel/sitio", "layout");
   return {};
 }

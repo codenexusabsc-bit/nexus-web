@@ -16,7 +16,7 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 alter table storage.objects enable row level security;
 grant select, insert, delete on storage.objects to authenticated;
 `);
-for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql", "006_firmas.sql"]) {
+for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql", "006_firmas.sql", "007_sitio_borrador.sql"]) {
   await db.exec(readFileSync(M + f, "utf8")); console.log("✓", f);
 }
 const A = "11111111-1111-1111-1111-111111111111", B = "22222222-2222-2222-2222-222222222222", X = "33333333-3333-3333-3333-333333333333";
@@ -131,5 +131,19 @@ ok(err && err.includes("en firma"), "documento en firma no se edita");
 err = null; try { await as(A, `update public.profiles set role = 'partner', signature_path = 'x' where id = '${A}'`); } catch (e) { err = e.message; }
 ok(err !== null, "no se cambia el rol al guardar la firma");
 ok((await as(A, `update public.profiles set signature_path = 'sello-e' where id = '${A}' returning id`)).rows.length === 1, "socio guarda su firma");
+// ---- 007: borrador del sitio ----
+const svc = (await db.query("select id from public.services order by position limit 1")).rows[0].id;
+const draft = { content: { hero: { title: "Nuevo título" } }, services: [{ id: svc, name: "Webs", description: "d", idealFor: "", color: "#112233", visible: true }, { id: "99999999-9999-4999-8999-999999999999", name: "Nuevo servicio", color: "#445566", visible: true }] };
+await as(A, `update public.site_settings set draft = '${JSON.stringify(draft)}'`);
+ok((await asAnon("select content from public.site_settings")).rows.length === 1, "anon sigue leyendo lo publicado");
+err = null; try { await asAnon("select draft from public.site_settings"); } catch (e) { err = e.message; }
+ok(err !== null, "anon no lee el borrador");
+err = null; try { await as(X, "select public.publish_site()"); } catch (e) { err = e.message; }
+ok(err !== null, "no socio no publica");
+await as(A, "select public.publish_site()");
+const pub = (await db.query("select content->'hero'->>'title' t, draft from public.site_settings")).rows[0];
+ok(pub.t === "Nuevo título" && pub.draft === null, "publicar aplica el contenido y limpia el borrador");
+const names = (await db.query("select name from public.services order by position")).rows.map((r) => r.name).join();
+ok(names === "Webs,Nuevo servicio", "publicar sincroniza servicios (renombra, crea y quita)");
 console.log(`\n${pass} ok, ${fail} fallas`);
 process.exit(fail ? 1 : 0);

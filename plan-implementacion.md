@@ -123,7 +123,7 @@ Un espacio común donde cualquiera de los dos socios deja archivos, y donde se *
 
 ### 1. Landing pública editable
 - Secciones: portada con el portal y planetas, servicios (las 7 tarjetas), cómo trabajamos, equipo, por qué elegirnos, contacto.
-- **Todo el texto, los servicios y los datos de contacto se guardan en la base de datos** y se editan desde `/panel/sitio` con vista previa. Al guardar, la página pública se regenera sola.
+- **Todo el texto, los servicios y los datos de contacto se guardan en la base de datos** y se editan desde `/panel/sitio` **por borrador**: guardar borrador → vista previa (`/panel/sitio/vista-previa`, solo socios) → publicar. Nada cambia en la página pública hasta publicar (migración 007, función `publish_site`).
 - Botón "Descargar presentación": sirve el PDF de Presentación, que se genera con el mismo contenido (no hay dos versiones que mantener).
 - Formulario de contacto → crea un prospecto y avisa por correo. Botón flotante de WhatsApp a 321 954 3616 / 320 322 6265.
 - SEO básico: título, descripción, imagen para compartir (la promocional), `sitemap.xml`.

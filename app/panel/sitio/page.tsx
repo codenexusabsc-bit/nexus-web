@@ -2,10 +2,11 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { ExternalLink, FileDown } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
-import { DEFAULT_CONTENT, contentSchema, toService } from "@/lib/sitio";
+import { listPartners } from "@/lib/carpeta";
+import { firstName } from "@/lib/format";
+import { getEditableSite } from "@/lib/sitio";
 import { createClient } from "@/lib/supabase/server";
-import { ContentEditor } from "@/components/sitio/ContentEditor";
-import { ServicesEditor } from "@/components/sitio/ServicesEditor";
+import { SiteDraftEditor } from "@/components/sitio/SiteDraftEditor";
 import { LeadsList, type Lead } from "@/components/sitio/LeadsList";
 
 export const metadata: Metadata = { title: "Sitio web" };
@@ -16,14 +17,14 @@ export default function SitioPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-navy">Sitio web</h1>
-          <p className="text-muted">Lo que cambies aquí se ve en la página pública y en el PDF de presentación.</p>
+          <p className="text-muted">Edita, mira la vista previa y publica cuando esté listo. Nada cambia en la página hasta que publiques.</p>
         </div>
         <div className="flex gap-2 text-sm">
           <a href="/" target="_blank" className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2 hover:border-purple">
-            <ExternalLink size={16} /> Ver página
+            <ExternalLink size={16} /> Página publicada
           </a>
           <a href="/presentacion" target="_blank" className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-3 py-2 hover:border-purple">
-            <FileDown size={16} /> Ver PDF
+            <FileDown size={16} /> PDF publicado
           </a>
         </div>
       </div>
@@ -44,41 +45,33 @@ export default function SitioPage() {
 async function Content() {
   await getCurrentUser();
   const supabase = await createClient();
-  const [{ data: settings, error: settingsError }, { data: services }, { data: leads }] = await Promise.all([
-    supabase.from("site_settings").select("content").maybeSingle(),
-    supabase.from("services").select("id, name, description, ideal_for, color, position, visible").order("position"),
+  const [site, { data: leads }, partners] = await Promise.all([
+    getEditableSite(),
     supabase.from("leads").select("*").order("created_at", { ascending: false }).limit(100),
+    listPartners(),
   ]);
+  const names = Object.fromEntries(partners.map((p) => [p.id, firstName(p.fullName)]));
 
-  if (settingsError) {
+  if (!site.migrated) {
     return (
       <p className="rounded-xl border border-orange/40 bg-orange/10 p-4 text-sm text-navy">
-        Falta aplicar la migración <code>003_sitio.sql</code> en Supabase para poder editar el sitio.
+        Falta aplicar las migraciones del sitio (003 y 007) en Supabase.
       </p>
     );
   }
-  const parsed = contentSchema.safeParse(settings?.content);
-  const leadList: Lead[] = ((leads ?? []) as (Omit<Lead, "createdAt"> & { created_at: string })[]).map((l) => ({
-    ...l,
-    createdAt: l.created_at,
-  }));
+  const leadList: Lead[] = ((leads ?? []) as (Omit<Lead, "createdAt"> & { created_at: string })[]).map((l) => ({ ...l, createdAt: l.created_at }));
 
   return (
     <>
       <section id="mensajes" className="flex scroll-mt-20 flex-col gap-3">
-        <h2 className="font-pixel text-sm text-purple">
-          MENSAJES DE LA PÁGINA ({leadList.filter((l) => l.status === "nuevo").length} NUEVOS)
-        </h2>
+        <h2 className="font-pixel text-sm text-purple">MENSAJES DE LA PÁGINA ({leadList.filter((l) => l.status === "nuevo").length} NUEVOS)</h2>
         <LeadsList leads={leadList} />
       </section>
-      <section id="servicios" className="flex scroll-mt-20 flex-col gap-3">
-        <h2 className="font-pixel text-sm text-purple">SERVICIOS</h2>
-        <ServicesEditor services={(services ?? []).map(toService)} />
-      </section>
-      <section id="textos" className="flex scroll-mt-20 flex-col gap-3">
-        <h2 className="font-pixel text-sm text-purple">TEXTOS Y CONTACTO</h2>
-        <ContentEditor initial={parsed.success ? parsed.data : DEFAULT_CONTENT} />
-      </section>
+      <SiteDraftEditor
+        initial={site.draft}
+        hasDraft={site.hasDraft}
+        draftInfo={site.draftAt ? { at: site.draftAt, by: names[site.draftBy ?? ""] ?? "—" } : null}
+      />
     </>
   );
 }

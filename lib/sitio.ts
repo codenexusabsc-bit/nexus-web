@@ -42,6 +42,21 @@ export const contentSchema = z.object({
 
 export type SiteContent = z.infer<typeof contentSchema>;
 
+export const draftServiceSchema = z.object({
+  id: z.uuid(),
+  name: z.string().trim().min(1, { error: "Cada servicio necesita nombre." }).max(80),
+  description: z.string().trim().max(400),
+  idealFor: z.string().trim().max(200),
+  color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, { error: "Color de servicio inválido." }),
+  position: z.number().int(),
+  visible: z.boolean(),
+});
+
+export const draftSchema = z.object({
+  content: contentSchema,
+  services: z.array(draftServiceSchema).max(20),
+});
+
 export interface Service {
   id: string;
   name: string;
@@ -153,7 +168,32 @@ export async function getPublicServices(): Promise<Service[]> {
   return (data as ServiceRow[]).map(toService);
 }
 
-/** Enlace de WhatsApp con mensaje inicial. */
-export function whatsappUrl(number: string, text = "Hola, quiero información sobre los servicios de Nexus Ingeniería."): string {
-  return `https://wa.me/${number}?text=${encodeURIComponent(text)}`;
+export { whatsappUrl } from "@/lib/sitio-shared";
+
+/** Para el panel: el borrador si existe; si no, lo publicado (con sesión de socio). */
+export async function getEditableSite(): Promise<{
+  draft: import("@/lib/sitio-shared").SiteDraft;
+  hasDraft: boolean;
+  draftAt: string | null;
+  draftBy: string | null;
+  migrated: boolean;
+}> {
+  const { createClient } = await import("@/lib/supabase/server");
+  const supabase = await createClient();
+  const [{ data: settings, error }, { data: services }] = await Promise.all([
+    supabase.from("site_settings").select("content, draft, draft_updated_at, draft_updated_by").maybeSingle(),
+    supabase.from("services").select("id, name, description, ideal_for, color, position, visible").order("position"),
+  ]);
+  const published = {
+    content: contentSchema.safeParse(settings?.content).data ?? DEFAULT_CONTENT,
+    services: ((services ?? []) as ServiceRow[]).map(toService),
+  };
+  const draft = draftSchema.safeParse(settings?.draft);
+  return {
+    draft: draft.success ? draft.data : published,
+    hasDraft: draft.success,
+    draftAt: (settings?.draft_updated_at as string | null) ?? null,
+    draftBy: (settings?.draft_updated_by as string | null) ?? null,
+    migrated: !error,
+  };
 }
