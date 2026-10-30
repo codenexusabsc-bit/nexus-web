@@ -229,3 +229,26 @@ body {
 .agenda-compact .fc .fc-daygrid-day-number { padding: 2px 4px; font-size: 0.72rem; }
 .agenda-compact .fc .fc-col-header-cell-cushion { padding: 3px 2px; font-size: 0.72rem; }
 .agenda-compact .fc-event { font-size: 0.7rem; padding: 0 2px; }
+
+/* ---- Barras de desplazamiento discretas -------------------- */
+/* Menú lateral oscuro: barra fina y casi transparente (sin el carril blanco ni flechas) */
+.scroll-dark {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.18) transparent;
+}
+.scroll-dark::-webkit-scrollbar { width: 6px; }
+.scroll-dark::-webkit-scrollbar-track { background: transparent; }
+.scroll-dark::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 0.18); border-radius: 999px; }
+.scroll-dark::-webkit-scrollbar-thumb:hover { background: rgb(255 255 255 / 0.32); }
+.scroll-dark::-webkit-scrollbar-button { display: none; height: 0; }
+
+/* Resto del sitio: barra fina con el morado de la marca */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(109 40 217 / 0.35) transparent;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgb(109 40 217 / 0.3); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: rgb(109 40 217 / 0.5); }
+::-webkit-scrollbar-button { display: none; height: 0; width: 0; }

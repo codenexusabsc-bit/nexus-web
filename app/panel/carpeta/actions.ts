@@ -5,6 +5,7 @@ import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
 import { BUCKET, MAX_FILE_BYTES } from "@/lib/carpeta";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, hasAdminKey } from "@/lib/supabase/admin";
 
 export interface ActionResult {
   error?: string;
@@ -254,6 +255,58 @@ export async function purgeFile(fileId: string): Promise<ActionResult> {
   }
   const { error } = await supabase.from("files").delete().eq("id", fileId).not("deleted_at", "is", null);
   if (error) return { error: "No se pudo borrar la ficha del archivo." };
+  refresh();
+  return {};
+}
+
+// ---- Archivar / borrar proyectos -----------------------------
+
+export async function setProjectArchived(projectId: string, archived: boolean): Promise<ActionResult> {
+  await getCurrentUser();
+  if (!uuid.safeParse(projectId).success) return { error: "Datos inválidos." };
+  const supabase = await createClient();
+  const { error } = await supabase.from("projects").update({ archived }).eq("id", projectId);
+  if (error) return { error: "No se pudo actualizar el proyecto." };
+  refresh();
+  return {};
+}
+
+/**
+ * Borra el proyecto para siempre: sus archivos (también de Storage), sus solicitudes
+ * y sus tareas. Documentos, cotizaciones y firmas quedan, pero sin proyecto.
+ */
+export async function deleteProject(projectId: string, confirmName: string): Promise<ActionResult> {
+  await getCurrentUser();
+  if (!uuid.safeParse(projectId).success) return { error: "Datos inválidos." };
+  const supabase = await createClient();
+  const { data: project } = await supabase.from("projects").select("name").eq("id", projectId).single();
+  if (!project) return { error: "No se encontró el proyecto." };
+  if (confirmName.trim().toLowerCase() !== project.name.trim().toLowerCase()) {
+    return { error: "El nombre no coincide. No se borró nada." };
+  }
+
+  const { data: files } = await supabase.from("files").select("id, file_versions ( storage_path )").eq("project_id", projectId);
+  const paths = ((files ?? []) as { file_versions: { storage_path: string }[] }[]).flatMap((f) => f.file_versions.map((v) => v.storage_path));
+  for (let i = 0; i < paths.length; i += 100) {
+    const { error } = await supabase.storage.from(BUCKET).remove(paths.slice(i, i + 100));
+    if (error) return { error: "No se pudieron borrar los archivos del almacenamiento." };
+  }
+  if (files?.length) {
+    const { error } = await supabase.from("files").delete().eq("project_id", projectId);
+    if (error) return { error: "No se pudieron borrar los archivos del proyecto." };
+  }
+
+  // Las solicitudes de documentos solo las puede borrar quien las pidió: se usa la clave
+  // de servidor para quitar también las del socio (el usuario ya se verificó arriba).
+  const { count } = await supabase.from("doc_requests").select("id", { count: "exact", head: true }).eq("project_id", projectId);
+  if (count) {
+    if (!hasAdminKey()) return { error: "El proyecto tiene solicitudes de documentos; bórralas primero en Solicitudes." };
+    const { error } = await createAdminClient().from("doc_requests").delete().eq("project_id", projectId);
+    if (error) return { error: "No se pudieron borrar las solicitudes del proyecto." };
+  }
+
+  const { error } = await supabase.from("projects").delete().eq("id", projectId);
+  if (error) return { error: "No se pudo borrar el proyecto." };
   refresh();
   return {};
 }

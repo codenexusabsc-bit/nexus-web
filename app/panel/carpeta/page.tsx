@@ -9,6 +9,7 @@ import { one, type SearchParams } from "@/lib/search-params";
 import { FileFilters } from "@/components/carpeta/FileFilters";
 import { FileList } from "@/components/carpeta/FileList";
 import { NewProjectForm } from "@/components/carpeta/NewProjectForm";
+import { ProjectActions } from "@/components/carpeta/ProjectActions";
 
 export const metadata: Metadata = { title: "Carpeta compartida" };
 
@@ -51,6 +52,7 @@ async function Content({ searchParams }: { searchParams: SearchParams }) {
   const names = Object.fromEntries(partners.map((p) => [p.id, firstName(p.fullName)]));
   const projectRefs = Object.fromEntries(projects.map((p) => [p.id, p]));
   const active = projects.filter((p) => !p.archived);
+  const archived = projects.filter((p) => p.archived);
 
   return (
     <>
@@ -81,6 +83,22 @@ async function Content({ searchParams }: { searchParams: SearchParams }) {
             </li>
           ))}
         </ul>
+        {archived.length > 0 && (
+          <details className="rounded-xl border border-border bg-white p-4">
+            <summary className="cursor-pointer text-sm font-semibold text-navy">Archivados ({archived.length})</summary>
+            <ul className="mt-3 flex flex-col divide-y divide-border">
+              {archived.map((p) => (
+                <li key={p.id} className="flex flex-wrap items-center gap-3 py-2">
+                  <span className="size-3 rounded-full" style={{ backgroundColor: p.color }} aria-hidden="true" />
+                  <Link href={`/panel/carpeta/${p.id}`} className="min-w-0 flex-1 truncate text-sm text-navy hover:text-purple">
+                    {p.name} <span className="text-xs text-muted">· {p.fileCount} {p.fileCount === 1 ? "archivo" : "archivos"}</span>
+                  </Link>
+                  <ProjectActions id={p.id} name={p.name} archived fileCount={p.fileCount} compact />
+                </li>
+              ))}
+            </ul>
+          </details>
+        )}
       </section>
 
       <section className="flex flex-col gap-4">

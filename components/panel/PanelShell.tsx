@@ -66,7 +66,7 @@ export function PanelShell({
         </div>
         {/* Cerrar el menú del celular al elegir una sección */}
         <div
-          className="relative flex-1 overflow-y-auto px-3"
+          className="scroll-dark relative flex-1 overflow-y-auto px-3"
           onClick={(e) => {
             if ((e.target as HTMLElement).closest("a")) setOpen(false);
           }}

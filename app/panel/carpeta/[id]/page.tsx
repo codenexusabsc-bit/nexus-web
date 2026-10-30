@@ -13,6 +13,7 @@ import { FileFilters } from "@/components/carpeta/FileFilters";
 import { FileList } from "@/components/carpeta/FileList";
 import { UploadZone } from "@/components/carpeta/UploadZone";
 import { ZipButton } from "@/components/carpeta/ZipButton";
+import { ProjectActions } from "@/components/carpeta/ProjectActions";
 
 export const metadata: Metadata = { title: "Proyecto" };
 
@@ -58,8 +59,14 @@ async function Content({ params, searchParams }: { params: Promise<{ id: string 
             {project.client && <p className="text-sm text-muted">{project.client}</p>}
           </div>
         </div>
-        <ZipButton projectId={project.id} projectName={project.name} />
+        <div className="flex flex-wrap gap-2">
+          <ZipButton projectId={project.id} projectName={project.name} />
+          <ProjectActions id={project.id} name={project.name} archived={project.archived} fileCount={files.length} />
+        </div>
       </div>
+      {project.archived && (
+        <p className="rounded-xl border border-orange/40 bg-orange/10 px-4 py-2 text-sm text-navy">Este proyecto está archivado: no aparece en la lista ni al crear documentos. Usa «Restaurar» para volver a mostrarlo.</p>
+      )}
 
       <section className="flex flex-col gap-3">
         <h2 className="font-pixel text-sm text-purple">TAREAS</h2>
