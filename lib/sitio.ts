@@ -28,6 +28,9 @@ export const contentSchema = z.object({
         name: z.string().trim().min(1).max(80),
         title: z.string().trim().max(80),
         text: z.string().trim().max(300),
+        // Para la tarjeta digital (/tarjeta/<nombre>) y la firma de correo
+        phone: z.string().trim().max(30).optional(),
+        email: z.union([z.literal(""), z.email({ error: "Correo de integrante inválido." })]).optional(),
       })
     )
     .max(6),

@@ -13,3 +13,13 @@ export interface SiteDraft {
   content: SiteContent;
   services: Service[];
 }
+
+/** "Álvaro Javier Bermúdez" → "alvaro-javier-bermudez" (dirección de la tarjeta digital). */
+export function slugify(text: string): string {
+  return text
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}

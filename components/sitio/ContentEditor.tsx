@@ -90,6 +90,8 @@ export function ContentEditor({ value: c, onChange }: { value: SiteContent; onCh
           <div key={i} className="grid gap-2 rounded-lg bg-bg p-3 sm:grid-cols-2">
             <input value={m.name} maxLength={80} placeholder="Nombre" onChange={(e) => set("team", c.team.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} className={input} aria-label="Nombre" />
             <input value={m.title} maxLength={80} placeholder="Cargo" onChange={(e) => set("team", c.team.map((x, j) => (j === i ? { ...x, title: e.target.value } : x)))} className={input} aria-label="Cargo" />
+            <input value={m.phone ?? ""} maxLength={30} placeholder="Teléfono (tarjeta digital)" onChange={(e) => set("team", c.team.map((x, j) => (j === i ? { ...x, phone: e.target.value } : x)))} className={input} aria-label="Teléfono" />
+            <input value={m.email ?? ""} maxLength={200} placeholder="Correo (tarjeta digital)" onChange={(e) => set("team", c.team.map((x, j) => (j === i ? { ...x, email: e.target.value } : x)))} className={input} aria-label="Correo" />
             <textarea value={m.text} maxLength={300} rows={2} placeholder="De qué se encarga" onChange={(e) => set("team", c.team.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)))} className={`${input} sm:col-span-2`} aria-label="Descripción" />
             <button type="button" onClick={() => set("team", c.team.filter((_, j) => j !== i))} className="inline-flex w-fit items-center gap-1 text-xs text-muted hover:text-red-600">
               <Trash2 size={13} /> Quitar

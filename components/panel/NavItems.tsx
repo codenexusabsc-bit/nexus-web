@@ -9,6 +9,7 @@ import {
   Globe,
   Inbox,
   Megaphone,
+  Palette,
   PenLine,
   Receipt,
   Users,
@@ -46,6 +47,7 @@ const GROUPS: { title: string; items: Item[] }[] = [
       { href: "/panel/documentos", label: "Documentos", icon: FilePen },
       { href: "/panel/firmas", label: "Firmas", icon: PenLine },
       { href: "/panel/piezas", label: "Piezas para redes", icon: Megaphone },
+      { href: "/panel/marca", label: "Kit de marca", icon: Palette },
     ],
   },
 ];

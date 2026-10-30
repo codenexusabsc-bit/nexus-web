@@ -40,7 +40,7 @@ Todo en planes gratuitos mientras no haya dominio propio. Dirección actual: **h
 | 6 | Generador de piezas para redes | ✅ Completada (sin migración; las piezas se guardan en la carpeta compartida) |
 | 7 | Cotizaciones y cuentas de cobro | 🔨 Código listo, falta aplicar la migración 008 |
 | 8 | Prospectos y tareas de proyecto | 🔨 Código listo, falta aplicar la migración 009 |
-| 9 | Utilidades de marca | 🔸 Adelantado: panel desplegable de logos y sellos (sellos solo con sesión) |
+| 9 | Utilidades de marca | ✅ Kit de marca, firma de correo, tarjetas digitales con QR y vCard (sin migración). Portafolio: pendiente |
 
 ---
 
@@ -278,6 +278,12 @@ RLS activa en todas las tablas: solo `partner` lee y escribe; el público solo a
 - Comprar el dominio (por ejemplo `nexusingenieria.co` o `.com`), conectarlo en Netlify, verificarlo en Resend para enviar desde `@nexusingenieria…`, y crear correos de dominio.
 
 ---
+
+## Migraciones pendientes de aplicar (al 29/10/2026)
+
+- `007_sitio_borrador.sql` — borrador y vista previa del sitio
+- `008_cotizaciones.sql` — cotizaciones, cuentas de cobro y datos de facturación
+- `009_prospectos_tareas.sql` — seguimiento de prospectos y tareas por proyecto
 
 ## Preguntas abiertas
 
