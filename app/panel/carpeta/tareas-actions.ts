@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { z } from "zod";
 import { getCurrentUser } from "@/lib/auth";
+import { notifyTaskAssigned } from "@/lib/correo";
 import { createClient } from "@/lib/supabase/server";
 
 export interface TResult {
@@ -12,8 +14,16 @@ export interface TResult {
 const uuid = z.uuid({ error: "Identificador inválido." });
 const refresh = () => revalidatePath("/panel", "layout");
 
+/** Avisa por correo (después de responder) si la tarea quedó a nombre de otro socio. */
+async function notifyAssignee(me: { id: string; fullName: string }, assigneeId: string | null, task: { title: string; notes?: string; projectId: string; dueOn: string | null }) {
+  if (!assigneeId || assigneeId === me.id) return;
+  const supabase = await createClient();
+  const { data: project } = await supabase.from("projects").select("name").eq("id", task.projectId).maybeSingle();
+  after(() => notifyTaskAssigned({ assigneeId, assignedBy: me.fullName || "Tu socio", projectName: (project?.name as string | undefined) ?? "un proyecto", ...task }));
+}
+
 export async function createTask(projectId: string, title: string, assignedTo: string | null, dueOn: string): Promise<TResult> {
-  await getCurrentUser();
+  const me = await getCurrentUser();
   const t = title.trim();
   if (!uuid.safeParse(projectId).success || !t || t.length > 200) return { error: "Escribe la tarea." };
   if (assignedTo && !uuid.safeParse(assignedTo).success) return { error: "Datos inválidos." };
@@ -21,6 +31,7 @@ export async function createTask(projectId: string, title: string, assignedTo: s
   const supabase = await createClient();
   const { error } = await supabase.from("tasks").insert({ project_id: projectId, title: t, assigned_to: assignedTo, due_on: dueOn || null, position: Date.now() / 1000 });
   if (error) return { error: "No se pudo crear la tarea. ¿Ya se aplicó la migración 009?" };
+  await notifyAssignee(me, assignedTo, { title: t, projectId, dueOn: dueOn || null });
   refresh();
   return {};
 }
@@ -35,7 +46,7 @@ const patchSchema = z.object({
 });
 
 export async function updateTask(id: string, patch: z.input<typeof patchSchema>): Promise<TResult> {
-  await getCurrentUser();
+  const me = await getCurrentUser();
   const parsed = patchSchema.safeParse(patch);
   if (!uuid.safeParse(id).success || !parsed.success) return { error: "Datos inválidos." };
   const p = parsed.data;
@@ -50,8 +61,18 @@ export async function updateTask(id: string, patch: z.input<typeof patchSchema>)
   if (p.dueOn !== undefined) row.due_on = p.dueOn || null;
   if (p.position !== undefined) row.position = p.position;
   const supabase = await createClient();
+  // Para saber si cambió el responsable, se lee la tarea antes de modificarla.
+  const { data: before } = p.assignedTo ? await supabase.from("tasks").select("title, notes, project_id, assigned_to, due_on").eq("id", id).maybeSingle() : { data: null };
   const { error } = await supabase.from("tasks").update(row).eq("id", id);
   if (error) return { error: "No se pudo actualizar la tarea." };
+  if (before && p.assignedTo && before.assigned_to !== p.assignedTo) {
+    await notifyAssignee(me, p.assignedTo, {
+      title: p.title ?? (before.title as string),
+      notes: p.notes ?? (before.notes as string),
+      projectId: before.project_id as string,
+      dueOn: p.dueOn !== undefined ? p.dueOn || null : ((before.due_on as string | null) ?? null),
+    });
+  }
   refresh();
   return {};
 }

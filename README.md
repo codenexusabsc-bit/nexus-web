@@ -45,6 +45,42 @@ Antes de aplicarlas, probar los permisos en local (PGlite, sin servidor):
 pnpm test:rls
 ```
 
+## Contabilidad, correo y segundo factor (migraciones 010 a 012)
+
+Aplicar `010_actividad.sql`, `011_portafolio.sql` y `012_contabilidad.sql` en ese orden
+(antes: `pnpm test:rls`). Variables nuevas, en `.env.local` y en Netlify; **nunca** con
+prefijo `NEXT_PUBLIC_` ni en chats o documentos:
+
+| Variable | Para qué |
+|----------|----------|
+| `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` | Cloudflare R2: imágenes de comprobantes y facturas |
+| `SMTP_USER`, `SMTP_PASSWORD` | Gmail SMTP: cuenta de Nexus y su **contraseña de aplicación** (no la contraseña normal) |
+| `SMTP_FROM_NAME` (opcional) | Nombre del remitente; por defecto «Nexus Ingeniería» |
+| `SITE_URL` (opcional) | Base de los enlaces de los correos; por defecto la dirección de Netlify |
+
+**R2, bucket privado.** Las subidas van directo del navegador con una URL firmada, así que el
+bucket necesita CORS (Cloudflare → R2 → el bucket → Settings → CORS policy):
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://nexus-ingenieria1.netlify.app", "http://localhost:3000"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["content-type"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+**Correo de tareas.** Cuando un socio asigna una tarea a otro, el asignado recibe un correo en la
+dirección con la que inicia sesión. Sin `SMTP_*` configurado el aviso simplemente no se envía.
+Requiere `SUPABASE_SERVICE_ROLE_KEY` (para leer el correo del socio).
+
+**Segundo factor (TOTP).** Cada socio lo activa en `/panel/seguridad`. Requiere que MFA/TOTP esté
+habilitado en Supabase → Authentication. Con él activo, el login pide el código; una sesión sin
+verificar no entra al panel. Si un socio pierde su app, se quita el factor desde Supabase →
+Authentication → Users.
+
 ## Firmas electrónicas (Fase 5)
 
 Los clientes firman por un enlace sin cuenta; el servidor valida el token y sella

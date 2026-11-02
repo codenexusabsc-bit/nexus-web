@@ -1,8 +1,9 @@
 // Pruebas de permisos (RLS) de las migraciones en PGlite. Uso: pnpm test:rls
 import { PGlite } from "@electric-sql/pglite";
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 const db = new PGlite();
-const M = new URL("../supabase/migrations/", import.meta.url).pathname;
+const M = fileURLToPath(new URL("../supabase/migrations/", import.meta.url));
 // Stubs mínimos de Supabase (auth.uid, auth.users, storage) para probar RLS sin servidor
 await db.exec(`
 create role anon nologin; create role authenticated nologin;
@@ -16,7 +17,7 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 alter table storage.objects enable row level security;
 grant select, insert, delete on storage.objects to authenticated;
 `);
-for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql", "006_firmas.sql", "007_sitio_borrador.sql", "008_cotizaciones.sql", "009_prospectos_tareas.sql"]) {
+for (const f of ["001_profiles.sql", "002_carpeta_compartida.sql", "003_sitio.sql", "004_agenda.sql", "005_documentos.sql", "006_firmas.sql", "007_sitio_borrador.sql", "008_cotizaciones.sql", "009_prospectos_tareas.sql", "010_actividad.sql", "011_portafolio.sql", "012_contabilidad.sql"]) {
   await db.exec(readFileSync(M + f, "utf8")); console.log("✓", f);
 }
 const A = "11111111-1111-1111-1111-111111111111", B = "22222222-2222-2222-2222-222222222222", X = "33333333-3333-3333-3333-333333333333";
@@ -65,7 +66,7 @@ ok(err !== null, "no socio no sube a storage");
 await db.exec("set role anon;"); err = null; try { await db.query("select * from public.files"); } catch (e) { err = e.message; } await db.exec("reset role;");
 ok(err !== null, "anon sin acceso a files");
 // ---- 003: sitio público ----
-const asAnon = async (sql) => { await db.exec("set role anon;"); try { return await db.query(sql); } finally { await db.exec("reset role;"); } };
+const asAnon = async (sql) => { await db.exec("select set_config('test.uid', '', false); set role anon;"); try { return await db.query(sql); } finally { await db.exec("reset role;"); } };
 ok((await asAnon("select content from public.site_settings")).rows.length === 1, "anon lee el contenido del sitio");
 ok((await asAnon("select * from public.services")).rows.length === 7, "anon lee los 7 servicios");
 await as(A, "update public.services set visible = false where name = 'Branding'");
@@ -169,5 +170,47 @@ ok((await as(A, "insert into public.leads (name, email, message, source) values 
 const t1 = (await as(A, `insert into public.tasks (project_id, title, assigned_to) values ('${proj}', 'Diseñar portada', '${B}') returning id`)).rows[0].id;
 ok((await as(B, `update public.tasks set status = 'hecha', completed_at = now() where id = '${t1}' returning id`)).rows.length === 1, "el socio asignado completa la tarea");
 ok((await as(X, "select * from public.tasks")).rows.length === 0, "no socio no ve tareas");
+// ---- 010: registro de actividad ----
+const logs = async (uid) => (await as(uid, "select action, table_name, summary, actor from public.audit_log order by id")).rows;
+const aLogs = await logs(A);
+ok(aLogs.some((l) => l.action === "crear" && l.table_name === "tasks" && l.summary === "Diseñar portada" && l.actor === A), "crear una tarea queda en el registro con su autor");
+ok(aLogs.some((l) => l.action === "editar" && l.table_name === "tasks" && l.actor === B), "completar una tarea registra al socio que la completó");
+ok(aLogs.some((l) => l.table_name === "leads" && l.action === "crear" && l.actor === null), "el mensaje del formulario web se registra sin autor");
+ok((await logs(X)).length === 0, "no socio no lee el registro");
+err = null; try { await as(A, "update public.audit_log set summary = 'borrado'"); } catch (e) { err = e.message; }
+ok(err !== null, "el registro no se edita");
+err = null; try { await as(A, "delete from public.audit_log"); } catch (e) { err = e.message; }
+ok(err !== null, "el registro no se borra");
+err = null; try { await as(A, `insert into public.audit_log (action, table_name, record_id) values ('crear', 'x', '1')`); } catch (e) { err = e.message; }
+ok(err !== null, "nadie inserta en el registro a mano");
+ok(aLogs.filter((l) => l.action === "firmar").length === 1, "firmar queda como evento propio y no como edición");
+// ---- 011: portafolio ----
+await as(A, "insert into public.portfolio_items (title, client, tags, url, position) values ('Sitio Bonett', 'Bonett', array['web','branding'], 'https://bonett.example', 1)");
+await as(A, "insert into public.portfolio_items (title, visible) values ('Oculto', false)");
+ok((await asAnon("select * from public.portfolio_items")).rows.length === 1, "anon solo ve proyectos visibles del portafolio");
+ok((await as(A, "select * from public.portfolio_items")).rows.length === 2, "socio ve todo el portafolio");
+ok((await as(X, "insert into public.portfolio_items (title) values ('x') returning id").catch(() => ({ rows: [] }))).rows.length === 0, "no socio no escribe en el portafolio");
+err = null; try { await as(A, "insert into public.portfolio_items (title, url) values ('x', 'javascript:alert(1)')"); } catch (e) { err = e.message; }
+ok(err !== null, "el enlace del portafolio debe ser https");
+err = null; try { await asAnon("insert into public.portfolio_items (title) values ('x')"); } catch (e) { err = e.message; }
+ok(err !== null, "anon no escribe en el portafolio");
+// ---- 012: contabilidad ----
+const accId = (await as(A, "insert into public.collection_accounts (client_name, concept, amount) values ('Cliente 50', 'Proyecto', 1000000) returning id")).rows[0].id;
+const key = (n) => `contabilidad/${"a".repeat(8)}-aaaa-aaaa-aaaa-${String(n).padStart(12, "0")}/comprobante.jpg`;
+await as(B, `insert into public.ledger_entries (kind, concept, amount, collection_account_id, file_key, file_name) values ('ingreso', 'Anticipo 50 %', 500000, '${accId}', '${key(1)}', 'comprobante.jpg')`);
+ok((await db.query(`select status from public.collection_accounts where id = '${accId}'`)).rows[0].status === "pendiente", "un pago del 50 % deja la cuenta pendiente");
+await as(B, `insert into public.ledger_entries (kind, concept, amount, collection_account_id) values ('ingreso', 'Saldo', 500000, '${accId}')`);
+const paid = (await db.query(`select status, paid_on from public.collection_accounts where id = '${accId}'`)).rows[0];
+ok(paid.status === "pagada" && paid.paid_on !== null, "los comprobantes que suman el total pasan la cuenta a pagada");
+ok((await as(X, "select * from public.ledger_entries")).rows.length === 0, "no socio no ve la contabilidad");
+err = null; try { await as(A, `insert into public.ledger_entries (kind, concept, amount, collection_account_id) values ('gasto', 'x', 1, '${accId}')`); } catch (e) { err = e.message; }
+ok(err !== null, "un gasto no se imputa a una cuenta de cobro");
+err = null; try { await as(A, "insert into public.ledger_entries (kind, concept, amount) values ('ingreso', 'x', 0)"); } catch (e) { err = e.message; }
+ok(err !== null, "el valor del movimiento debe ser mayor que cero");
+err = null; try { await as(A, "insert into public.ledger_entries (kind, concept, amount, file_key) values ('gasto', 'x', 1, '../etc/passwd')"); } catch (e) { err = e.message; }
+ok(err !== null, "la llave del archivo debe estar bajo contabilidad/");
+await as(A, `delete from public.ledger_entries where concept = 'Saldo'`);
+ok((await db.query(`select status from public.collection_accounts where id = '${accId}'`)).rows[0].status === "pagada", "borrar un comprobante no devuelve la cuenta a pendiente");
+ok((await logs(A)).some((l) => l.table_name === "ledger_entries" && l.action === "borrar"), "borrar un movimiento queda registrado");
 console.log(`\n${pass} ok, ${fail} fallas`);
 process.exit(fail ? 1 : 0);

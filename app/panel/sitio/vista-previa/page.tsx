@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, Eye } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getEditableSite } from "@/lib/sitio";
+import { getPublicPortfolio } from "@/lib/portafolio-data";
 import { LandingView } from "@/components/landing/LandingView";
 import { PublishFromPreview } from "@/components/sitio/PublishFromPreview";
 
@@ -20,7 +21,7 @@ export default function PreviewPage() {
 
 async function Preview() {
   await getCurrentUser();
-  const site = await getEditableSite();
+  const [site, portfolio] = await Promise.all([getEditableSite(), getPublicPortfolio()]);
   return (
     <div className="-mx-4 -my-6 sm:-mx-8 lg:-my-8">
       <div className="sticky top-0 z-40 flex flex-wrap items-center gap-3 bg-orange px-4 py-2.5 text-sm text-navy shadow-lg sm:px-8">
@@ -33,7 +34,7 @@ async function Preview() {
       </div>
       {/* Contenedor que aísla la landing del layout del panel */}
       <div className="relative isolate overflow-hidden [&_header.fixed]:absolute">
-        <LandingView content={site.draft.content} services={site.draft.services} preview />
+        <LandingView content={site.draft.content} services={site.draft.services} portfolio={portfolio} preview />
       </div>
     </div>
   );

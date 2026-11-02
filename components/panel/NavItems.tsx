@@ -3,16 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Briefcase,
   CalendarDays,
   FilePen,
   FolderOpen,
   Globe,
+  History,
   Inbox,
   Megaphone,
   Palette,
   PenLine,
   Receipt,
+  ShieldCheck,
   Users,
+  Wallet,
   type LucideIcon,
 } from "lucide-react";
 
@@ -39,6 +43,15 @@ const GROUPS: { title: string; items: Item[] }[] = [
       { href: "/panel/sitio", label: "Sitio web y mensajes", icon: Globe },
       { href: "/panel/prospectos", label: "Prospectos", icon: Users },
       { href: "/panel/cotizaciones", label: "Cotizaciones y cobros", icon: Receipt },
+      { href: "/panel/portafolio", label: "Portafolio", icon: Briefcase },
+    ],
+  },
+  {
+    title: "Finanzas y control",
+    items: [
+      { href: "/panel/contabilidad", label: "Contabilidad", icon: Wallet },
+      { href: "/panel/actividad", label: "Actividad", icon: History },
+      { href: "/panel/seguridad", label: "Seguridad", icon: ShieldCheck },
     ],
   },
   {

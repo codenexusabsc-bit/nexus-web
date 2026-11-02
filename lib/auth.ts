@@ -25,6 +25,19 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser> => {
     redirect("/login");
   }
 
+  // Segundo factor: si el socio activó TOTP, una sesión con solo la contraseña (aal1) no entra.
+  // Los factores se consultan al servidor con getUser(): la cookie no es de fiar para esto,
+  // porque quien solo tiene la contraseña podría editarla para ocultar su factor.
+  // Las sesiones ya verificadas (aal2) no pagan esta consulta.
+  if (claims.aal !== "aal2") {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (user?.factors?.some((f) => f.status === "verified")) {
+      redirect("/login/verificar");
+    }
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("full_name, title, role")

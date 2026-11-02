@@ -40,7 +40,15 @@ export async function signIn(
     return { error: "Correo o contraseña incorrectos.", email };
   }
 
-  redirect(safeNextPath(formData.get("next")));
+  const next = safeNextPath(formData.get("next"));
+
+  // Con TOTP activado hace falta el código antes de entrar al panel.
+  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal?.nextLevel === "aal2" && aal.currentLevel !== "aal2") {
+    redirect(`/login/verificar?next=${encodeURIComponent(next)}`);
+  }
+
+  redirect(next);
 }
 
 export async function signOut() {

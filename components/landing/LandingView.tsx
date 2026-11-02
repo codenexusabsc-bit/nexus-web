@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { ArrowDown, FileDown, Mail, MessageCircle, Phone } from "lucide-react";
 import { whatsappUrl, type Service, type SiteContent } from "@/lib/sitio-shared";
+import { portfolioImageUrl, type PortfolioItem } from "@/lib/portafolio";
 import { SpaceBackground } from "@/components/space/SpaceBackground";
 import { OrbitingPortal } from "@/components/space/OrbitingPortal";
 import { LandingNav } from "@/components/landing/LandingNav";
@@ -11,7 +12,7 @@ import { ContactForm } from "@/components/landing/ContactForm";
  * Cuerpo de la landing. Lo usa la página pública (contenido publicado) y la
  * vista previa del panel (borrador sin publicar).
  */
-export function LandingView({ content, services, preview = false }: { content: SiteContent; services: Service[]; preview?: boolean }) {
+export function LandingView({ content, services, portfolio = [], preview = false }: { content: SiteContent; services: Service[]; portfolio?: PortfolioItem[]; preview?: boolean }) {
   const { hero, about, steps, team, values, contact } = content;
   const wa = whatsappUrl(contact.whatsapp);
   const visible = services.filter((s) => s.visible);
@@ -79,6 +80,55 @@ export function LandingView({ content, services, preview = false }: { content: S
           </ul>
         </div>
       </section>
+
+      {/* ---- Portafolio (solo si hay proyectos visibles) ---- */}
+      {portfolio.length > 0 && (
+        <section id="portafolio" className="relative scroll-mt-16 overflow-hidden py-20">
+          <SpaceBackground stars={60} shooting={2} seed={27} />
+          <div className="relative mx-auto max-w-6xl px-4 sm:px-8">
+            <Reveal>
+              <SectionTitle kicker="PORTAFOLIO" title="Proyectos destacados" />
+            </Reveal>
+            <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {portfolio.map((p, i) => {
+                const img = portfolioImageUrl(p.imagePath);
+                const body = (
+                  <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-white/10 bg-white/5 backdrop-blur transition duration-300 hover:-translate-y-1 hover:border-cyan/40">
+                    <div className="relative aspect-[16/10] w-full" style={{ backgroundColor: p.color }}>
+                      {img && <Image src={img} alt={p.title} fill sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw" unoptimized className="object-cover transition duration-500 group-hover:scale-105" />}
+                    </div>
+                    <div className="flex flex-1 flex-col gap-2 p-5">
+                      {p.client && <p className="text-xs text-cyan">{p.client}</p>}
+                      <h3 className="text-lg font-bold">{p.title}</h3>
+                      {p.summary && <p className="flex-1 text-sm text-white/70">{p.summary}</p>}
+                      {p.tags.length > 0 && (
+                        <ul className="mt-1 flex flex-wrap gap-1.5">
+                          {p.tags.map((t) => (
+                            <li key={t} className="rounded-full bg-white/10 px-2 py-0.5 text-[0.7rem] text-white/80">{t}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </article>
+                );
+                return (
+                  <li key={p.id}>
+                    <Reveal delay={(i % 3) * 90} className="h-full">
+                      {p.url ? (
+                        <a href={p.url} target="_blank" rel="noopener noreferrer" className="block h-full">
+                          {body}
+                        </a>
+                      ) : (
+                        body
+                      )}
+                    </Reveal>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </section>
+      )}
 
       {/* ---- Nosotros ---- */}
       <section id="nosotros" className="relative scroll-mt-16 overflow-hidden py-20">
